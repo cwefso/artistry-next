@@ -1,0 +1,12 @@
+export interface Painting {
+    contentId?: string;
+    title?: string;
+    image?: string;
+    artistName?: string;
+    artistContentId?: number;
+    completionYear?: number;
+    yearAsString?: string;
+    height?: number;
+    width?: number;
+  }
+  
