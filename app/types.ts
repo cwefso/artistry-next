@@ -4,7 +4,7 @@ export interface Painting {
     image?: string;
     artistName?: string;
     artistContentId?: number;
-    completionYear?: number;
+    completitionYear?: number;
     yearAsString?: string;
     height?: number;
     width?: number;

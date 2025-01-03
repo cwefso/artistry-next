@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       model: "gpt-4",
       messages: [
         { role: "system", content: "You are a helpful assistant." },
-        { role: "user", content: "Give me a single random word." },
+        { role: "user", content: "Give me a single random word. Try to make the words as varied as possible, with as much variety in subject matter as possible." },
       ],
     });
 

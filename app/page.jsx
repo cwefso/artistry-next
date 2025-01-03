@@ -3,7 +3,6 @@
 import Image from "next/image";
 import usePainting from "./hooks/usePainting"; // Adjust the import to your file structure
 import { useEffect, useState } from "react";
-import RandomWordPage from "./components/RandomWordPage";
 
 export default function Home() {
 
