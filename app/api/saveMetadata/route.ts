@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const clerk = await clerkClient();
 
     // Fetch current user metadata
-    const userMetadata = await user.publicMetadata;
+    const userMetadata = await user.privateMetadata;
 
     // Ensure gallery is initialized as an array (if it's missing or is an object)
     const gallery = Array.isArray(userMetadata?.gallery) ? userMetadata?.gallery : [];
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     // Update the user metadata with the updated gallery array (without duplicates)
     await clerk.users.updateUserMetadata(user.id!, {
-      publicMetadata: {
+      privateMetadata: {
         gallery: [...gallery, metadataValue],
          // Store the updated gallery array
       },
