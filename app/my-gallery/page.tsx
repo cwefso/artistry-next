@@ -4,13 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Painting } from "../types";
-import usePaintings from "../hooks/usePaintings";
 
-export default function Gallery() {
-  const { paintings, loading, error } = usePaintings(
-    "http://www.wikiart.org/en/App/Painting/MostViewedPaintings"
-  );
-
+export default function MyGallery() {
+  const [paintings, setPaintings] = useState<Painting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [validPaintings, setValidPaintings] = useState<Painting[]>([]);
 
   // Function to check if an image URL is valid
@@ -23,6 +21,40 @@ export default function Gallery() {
     }
   };
 
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/userGallery");
+        if (!response.ok) {
+          throw new Error("Failed to fetch gallery");
+        }
+        const data = await response.json();
+        setPaintings(data.gallery);
+
+        // Validate all images and filter out invalid ones
+        const validatedPaintings = await Promise.all(
+          data.gallery.map(async (painting: Painting) => {
+            const isValid = await isImageValid(painting.image as string);
+            return { painting, isValid };
+          })
+        );
+
+        setValidPaintings(
+          validatedPaintings
+            .filter(({ isValid }) => isValid)
+            .map(({ painting }) => painting)
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGallery();
+  }, []);
+
   // Sanitize title for URL
   const sanitizeTitle = (title: string) =>
     title
@@ -30,39 +62,21 @@ export default function Gallery() {
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
 
-  useEffect(() => {
-    const validatePaintings = async () => {
-      if (!paintings) return;
-
-      // Validate all images and filter out invalid ones
-      const validatedPaintings = await Promise.all(
-        paintings.map(async (painting: Painting) => {
-          const isValid = await isImageValid(painting.image as string);
-          return { painting, isValid };
-        })
-      );
-
-      setValidPaintings(
-        validatedPaintings
-          .filter(({ isValid }) => isValid)
-          .map(({ painting }) => painting)
-      );
-    };
-
-    validatePaintings();
-  }, [paintings]);
-
   return (
     <main>
+      <section className="header w-full flex flex-row justify-between">
+        <h1 className="page-title">My Gallery</h1>
+      </section>
+
       {loading ? (
-        <p className="text-center mt-6 text-lg">Loading paintings...</p>
+        <p className="text-center mt-6 text-lg">Loading your gallery...</p>
       ) : error ? (
         <p className="text-center mt-6 text-lg text-red-500">
-          Error loading paintings. Please try again later.
+          Error loading your gallery: {error}
         </p>
       ) : validPaintings.length === 0 ? (
         <p className="text-center mt-6 text-lg">
-          No paintings available. Please try again later.
+          Your gallery is empty. Start adding paintings to see them here!
         </p>
       ) : (
         <section className="gallery" aria-label="gallery">

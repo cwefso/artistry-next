@@ -2,69 +2,97 @@
 import { useState, useEffect, useRef } from "react";
 import { Painting } from "../types";
 
+interface FetchWordResponse {
+  word: string;
+}
+
 const useRandomPainting = () => {
   const [painting, setPainting] = useState<Painting | null>(null);
   const [loading, setLoading] = useState(false);
-  const [bannedWords, setBannedWords] = useState<string[]>([]); // Track banned words
-  const hasFetched = useRef(false); // Track if fetch has already completed
+  const [bannedWords, setBannedWords] = useState<Set<string>>(new Set());
+  const hasFetched = useRef(false);
+
+  const fetchRandomWord = async (): Promise<string> => {
+    const response = await fetch("/api/randomWord", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Banned-Words": JSON.stringify(Array.from(bannedWords)),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch random word: ${response.statusText}`);
+    }
+
+    const { word } = (await response.json()) as FetchWordResponse;
+    
+    if (!word) {
+      throw new Error("No word received from API");
+    }
+
+    return word;
+  };
+
+  const fetchPaintingByWord = async (word: string): Promise<Painting> => {
+    const response = await fetch(
+      `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${encodeURIComponent(word)}/1?json=2`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch painting: ${response.statusText}`);
+    }
+
+    const paintings = await response.json();
+    
+    if (!paintings?.[0]) {
+      throw new Error(`No painting found for word: ${word}`);
+    }
+
+    return paintings[0];
+  };
+
+  const getValidWord = async (): Promise<string> => {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 5;
+
+    while (attempts < MAX_ATTEMPTS) {
+      const word = await fetchRandomWord();
+      
+      if (!bannedWords.has(word)) {
+        return word;
+      }
+      
+      attempts++;
+      console.log(`Word "${word}" is banned, attempt ${attempts}/${MAX_ATTEMPTS}`);
+    }
+
+    throw new Error(`Failed to find valid word after ${MAX_ATTEMPTS} attempts`);
+  };
 
   useEffect(() => {
-    if (hasFetched.current) return; // Prevent re-running the effect after the first fetch
+    if (hasFetched.current) return;
 
     const fetchRandomWordAndPainting = async () => {
       setLoading(true);
+
       try {
-        let word = "";
-        let retry = true;
-
-        while (retry) {
-          // Fetch random word and ensure it is not banned
-          const wordResponse = await fetch("/api/randomWord", {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Banned-Words": JSON.stringify(bannedWords), // Send banned words to the API
-            },
-          });
-          const { word: fetchedWord } = await wordResponse.json();
-
-          if (fetchedWord && !bannedWords.includes(fetchedWord)) {
-            word = fetchedWord;
-            retry = false; // Exit loop if valid word is found
-          } else {
-            // If word is in the banned list, try again
-            console.log(`Word ${fetchedWord} is banned, retrying...`);
-          }
-        }
-
-        // Add the valid word to the banned list
-        setBannedWords((prevWords) => [...prevWords, word]);
-
-        // Fetch painting related to the random word
-        const paintingResponse = await fetch(
-          `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${word}/1?json=2`
-        );
-        const paintingResult = await paintingResponse.json();
-
-        if (paintingResult[0]) {
-          setPainting(paintingResult[0]); // Set the painting to state
-        } else {
-          console.error("No painting found for the word.");
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          console.error("Error:", err.message);
-        } else {
-          console.error("An unknown error occurred");
-        }
+        const word = await getValidWord();
+        setBannedWords(prev => new Set(prev).add(word));
+        
+        const paintingData = await fetchPaintingByWord(word);
+        setPainting(paintingData);
+      } catch (error) {
+        console.error("Error fetching painting:", error instanceof Error ? error.message : "Unknown error");
+        setPainting(null);
       } finally {
         setLoading(false);
-        hasFetched.current = true; // Mark the fetch as completed
+        hasFetched.current = true;
       }
     };
 
     fetchRandomWordAndPainting();
-  }, []); // Empty dependency array to run the effect only once
+  }, []);
 
   return { painting, loading };
 };

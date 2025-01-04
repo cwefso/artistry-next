@@ -6,6 +6,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import "./globals.css";
+import Link from "next/link";
 export default function RootLayout({
   children,
 }: {
@@ -19,7 +20,12 @@ export default function RootLayout({
             <SignInButton />
           </SignedOut>
           <SignedIn>
-            <UserButton />
+            <div className="flex flex-row justify-between items-center m-4">
+              <div className="border border-white text-white py-2 px-4 rounded-md hover:bg-white hover:text-black transition-colors">
+                <Link href="/my-gallery">My Gallery</Link>
+              </div>
+              <UserButton />
+            </div>
           </SignedIn>
           {children}
         </body>
