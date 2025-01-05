@@ -1,7 +1,7 @@
 "use client";
-import type { ArtistPainting, PaintingInformation } from "../types";
-import useSavePainting from "../hooks/useSavePainting";
-import LoadingSpinner from "./LoadingSpinner";
+import type { ArtistPainting, PaintingInformation } from "../../types";
+import useSavePainting from "../../hooks/useSavePainting";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface SavePaintingProps {
   painting: PaintingInformation | ArtistPainting;
@@ -17,7 +17,7 @@ const VARIANT_STYLES = {
   minimal: "text-blue-400 hover:text-blue-300 underline",
 };
 
-const SavePainting = ({
+const SavePaintingButton = ({
   painting,
   onSaveSuccess,
   onSaveError,
@@ -66,4 +66,4 @@ const SavePainting = ({
   );
 };
 
-export default SavePainting;
+export default SavePaintingButton;

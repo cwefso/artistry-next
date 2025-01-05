@@ -1,7 +1,7 @@
 "use client";
 import { useState, useCallback } from "react";
-import type { Painting } from "../types";
-import { GalleryLayout } from "./GalleryLayout";
+import type { Painting } from "../../types";
+import { GalleryLayout } from "../Gallery/GalleryLayout";
 
 interface SearchState {
   paintings: Painting[] | null;

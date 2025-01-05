@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Painting } from "../types";
+import { Painting } from "../../types";
 import { PaintingCard } from "./PaintingCard";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface GalleryLayoutProps {
   paintings: Painting[] | null;
@@ -52,6 +53,9 @@ export function GalleryLayout({ paintings }: GalleryLayoutProps) {
     }
   }, [paintings]);
 
+  if (!paintings) {
+    return <LoadingSpinner />;
+  }
   return (
     <main>
       <section className="gallery" aria-label="gallery">

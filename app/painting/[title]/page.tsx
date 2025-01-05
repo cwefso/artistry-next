@@ -1,6 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import PaintingDetails from "@/app/components/PaintingDetails";
+import PaintingDetails from "@/app/components/Painting/PaintingDetails";
 import usePaintingSummary from "@/app/hooks/usePaintingSummary";
 
 export default function Page() {

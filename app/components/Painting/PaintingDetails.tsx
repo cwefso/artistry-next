@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
-import type { PaintingInformation } from "../types";
+import type { PaintingInformation } from "../../types";
 import Image from "next/image";
-import DeletePainting from "./DeletePainting";
+import DeletePaintingButton from "./DeletePaintingButton";
 import { SignedIn } from "@clerk/nextjs";
 import SavePaintingButton from "./SavePaintingButton";
 
@@ -127,7 +127,7 @@ export default function PaintingDetails({ painting }: PaintingDetailsProps) {
             painting={painting}
             onSaveSuccess={() => console.log("Saved successfully!")}
           />
-          <DeletePainting
+          <DeletePaintingButton
             painting={painting}
             onDeleteSuccess={() => console.log("Deleted successfully")}
           />

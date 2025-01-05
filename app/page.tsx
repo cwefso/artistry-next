@@ -1,18 +1,12 @@
 "use client";
 
-import useRandomPaintings from "./hooks/useRandomPaintings";
-import { GalleryLayout } from "./components/GalleryLayout";
+import { GalleryLayout } from "./components/Gallery/GalleryLayout";
+import usePaintings from "./hooks/usePaintings";
 
 export default function Home() {
-  const { paintings, loading } = useRandomPaintings();
-
-  if (loading || !paintings) {
-    return (
-      <section className="flex items-center justify-center min-h-screen">
-        <h1>Loading...</h1>
-      </section>
-    );
-  }
+  const { paintings } = usePaintings(
+    "http://www.wikiart.org/en/App/Painting/MostViewedPaintings"
+  );
 
   return <GalleryLayout paintings={paintings} />;
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Painting } from "../types";
-import { GalleryLayout } from "../components/GalleryLayout";
+import { GalleryLayout } from "../components/Gallery/GalleryLayout";
 
 export default function MyGallery() {
   const [paintings, setPaintings] = useState<Painting[]>([]);

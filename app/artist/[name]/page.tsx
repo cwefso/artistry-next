@@ -1,7 +1,7 @@
 "use client";
-import { useArtistPaintings } from "../../hooks/useArtistInfo";
+import { useArtistPaintings } from "../../hooks/useArtistPaintings";
 import { usePathname } from "next/navigation"; // Correct import
-import { GalleryLayout } from "@/app/components/GalleryLayout";
+import { GalleryLayout } from "@/app/components/Gallery/GalleryLayout";
 
 export default function ArtistPage() {
   const pathname = usePathname();

@@ -1,17 +1,22 @@
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
   const buttonClass =
     "border border-white text-white py-2 px-4 rounded-md hover:bg-white hover:text-black transition-colors";
 
+  const pathname = usePathname();
+
   return (
     <section>
       <SignedOut>
         <div className="flex flex-row justify-between items-center m-4">
-          <Link href="/gallery" className={buttonClass}>
-            Gallery
-          </Link>
+          {pathname !== "/" && (
+            <Link href="/" className={buttonClass}>
+              Popular
+            </Link>
+          )}
           <Link href="/search" className={buttonClass}>
             Search
           </Link>
@@ -22,12 +27,11 @@ const Header = () => {
       </SignedOut>
       <SignedIn>
         <div className="flex flex-row justify-between items-center m-4">
-          <Link href="/my-gallery" className={buttonClass}>
-            My Gallery
-          </Link>
-          <Link href="/gallery" className={buttonClass}>
-            Gallery
-          </Link>
+          {pathname !== "/" && (
+            <Link href="/" className={buttonClass}>
+              Popular
+            </Link>
+          )}
           <Link href="/search" className={buttonClass}>
             Search
           </Link>

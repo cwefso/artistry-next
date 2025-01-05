@@ -1,7 +1,7 @@
 "use client";
 
 import useRandomPaintings from "../hooks/useRandomPaintings";
-import { GalleryLayout } from "../components/GalleryLayout";
+import { GalleryLayout } from "../components/Gallery/GalleryLayout";
 
 export default function Home() {
   const { paintings, loading } = useRandomPaintings();

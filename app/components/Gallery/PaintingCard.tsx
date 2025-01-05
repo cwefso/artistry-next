@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Painting } from "../types";
+import { Painting } from "../../types";
 
 interface PaintingCardProps {
   painting: Painting;

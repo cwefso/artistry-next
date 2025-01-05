@@ -1,7 +1,7 @@
 "use client";
-import type { ArtistPainting, PaintingInformation } from "../types";
-import useDeletePainting from "../hooks/useDeletePainting";
-import LoadingSpinner from "./LoadingSpinner";
+import type { ArtistPainting, PaintingInformation } from "../../types";
+import useDeletePainting from "../../hooks/useDeletePainting";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface DeletePaintingProps {
   painting: PaintingInformation | ArtistPainting;
@@ -17,7 +17,7 @@ const VARIANT_STYLES = {
   minimal: "text-red-400 hover:text-red-300 underline",
 };
 
-const DeletePainting = ({
+const DeletePaintingButton = ({
   painting,
   onDeleteSuccess,
   onDeleteError,
@@ -67,4 +67,4 @@ const DeletePainting = ({
   );
 };
 
-export default DeletePainting;
+export default DeletePaintingButton;
