@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Painting
- } from "../types";
+import { Painting } from "../types";
+
 const usePaintings = (initialUrl: string) => {
   const [paintings, setPaintings] = useState<Painting[]>([]);
   const [url, setUrl] = useState<string>(initialUrl);
@@ -27,10 +27,16 @@ const usePaintings = (initialUrl: string) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const result: any = await response.json();
+
+        // Define the result as an array of Painting objects
+        const result: Painting[] = await response.json();
         const shuffled = shuffleArray(result);
         setPaintings(shuffled);
       } catch (err) {
+        // Option 1: Log the error (for debugging purposes)
+        console.error(err);
+
+        // Option 2: If you don't want to log, just set the error state
         setError("true");
       } finally {
         setLoading(false);

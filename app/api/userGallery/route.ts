@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { currentUser, clerkClient } from '@clerk/nextjs/server';
 import { Painting } from '@/app/types';
+import { error } from 'console';
 
 export async function GET() {
   // Get the current logged-in Clerk user
@@ -25,6 +26,7 @@ export async function GET() {
     // Return the gallery array
     return NextResponse.json({ gallery });
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 },
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
   
     if (!user) {
       return NextResponse.json(
-        { error: 'You are not authorized' },
+        { error: error },
         { status: 401 },
       );
     }
@@ -64,7 +66,7 @@ export async function POST(request: Request) {
   
       if (isDuplicate) {
         return NextResponse.json(
-          { error: 'This painting is already in your gallery' },
+          { error: error },
           { status: 400 },
         );
       }
@@ -79,9 +81,9 @@ export async function POST(request: Request) {
   
       // Return a success response
       return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch (err) {
       return NextResponse.json(
-        { error: 'Internal Server Error' },
+        { error: err instanceof Error ? err.message : "An unexpected error occurred", },
         { status: 500 },
       );
     }
@@ -142,9 +144,9 @@ export async function POST(request: Request) {
   
       // Return a success response
       return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch (err) {
       return NextResponse.json(
-        { error: 'Internal Server Error' },
+        { error: err instanceof Error ? err.message : "An unexpected error occurred", },
         { status: 500 },
       );
     }

@@ -5,7 +5,7 @@ import { Painting } from "../types";
 const useSearch = (word: string) => {
   const [paintings, setPaintings] = useState<Painting[] | null>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("")
+  const [error, setError] = useState<string>(""); // Error state is defined
   const hasFetched = useRef(false);
 
   const fetchPaintingsByWord = async (word: string): Promise<Painting[]> => {
@@ -26,7 +26,6 @@ const useSearch = (word: string) => {
     return paintings;
   };
 
-
   useEffect(() => {
     if (hasFetched.current) return;
 
@@ -37,6 +36,7 @@ const useSearch = (word: string) => {
         const paintingData = await fetchPaintingsByWord(word);
         setPaintings(paintingData);
       } catch (error) {
+        console.error("Error details:", error);
         setError("Error fetching painting");
         setPaintings(null);
       } finally {
@@ -46,9 +46,9 @@ const useSearch = (word: string) => {
     };
 
     fetchRandomWordAndPainting();
-  }, []);
+  }, [word]); // Dependency on `word` to refetch when it changes
 
-  return { paintings, loading, error };
+  return { paintings, loading, error }; // Return the error so you can use it in the component
 };
 
 export default useSearch;

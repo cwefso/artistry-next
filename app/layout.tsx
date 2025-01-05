@@ -24,6 +24,12 @@ export default function RootLayout({
               <div className="border border-white text-white py-2 px-4 rounded-md hover:bg-white hover:text-black transition-colors">
                 <Link href="/my-gallery">My Gallery</Link>
               </div>
+              <div className="border border-white text-white py-2 px-4 rounded-md hover:bg-white hover:text-black transition-colors">
+                <Link href="/gallery">Gallery</Link>
+              </div>
+              <div className="border border-white text-white py-2 px-4 rounded-md hover:bg-white hover:text-black transition-colors">
+                <Link href="/search">Search</Link>
+              </div>
               <UserButton />
             </div>
           </SignedIn>

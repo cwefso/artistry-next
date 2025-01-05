@@ -8,67 +8,62 @@ interface FetchWordResponse {
 
 const useRandomPaintings = () => {
   const [paintings, setPaintings] = useState<Painting[] | null>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("")
-  const [bannedWords, setBannedWords] = useState<Set<string>>(new Set());
-  const hasFetched = useRef(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
+  const hasFetched = useRef<boolean>(false);
+
+  // Function to fetch random word from the API
   const fetchRandomWord = async (): Promise<string> => {
-    const response = await fetch("/api/randomWord", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Banned-Words": JSON.stringify(Array.from(bannedWords)),
-      },
-    });
+    try {
+      const response = await fetch("/api/randomWord", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch random word: ${response.statusText}`);
-    }
-
-    const { word } = (await response.json()) as FetchWordResponse;
-    
-    if (!word) {
-      throw new Error("No word received from API");
-    }
-
-    return word;
-  };
-
-  const fetchPaintingsByWord = async (word: string): Promise<Painting[]> => {
-    const response = await fetch(
-      `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${encodeURIComponent(word)}/1?json=2`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch painting: ${response.statusText}`);
-    }
-
-    const paintings = await response.json();
-    
-    if (!paintings?.[0]) {
-      throw new Error(`No painting found for word: ${word}`);
-    }
-
-    return paintings;
-  };
-
-  const getValidWord = async (): Promise<string> => {
-    let attempts = 0;
-    const MAX_ATTEMPTS = 5;
-
-    while (attempts < MAX_ATTEMPTS) {
-      const word = await fetchRandomWord();
-      
-      if (!bannedWords.has(word)) {
-        return word;
+      if (!response.ok) {
+        throw new Error(`Failed to fetch random word: ${response.statusText}`);
       }
-      
-      attempts++;
-      console.log(`Word "${word}" is banned, attempt ${attempts}/${MAX_ATTEMPTS}`);
-    }
 
-    throw new Error(`Failed to find valid word after ${MAX_ATTEMPTS} attempts`);
+      const { word } = (await response.json()) as FetchWordResponse;
+
+      if (!word) {
+        throw new Error("No word received from API");
+      }
+
+      return word;
+    } catch (error) {
+      console.error(error)
+      throw new Error("Error fetching random word");
+    }
+  };
+
+  // Function to fetch paintings based on a word
+  const fetchPaintingsByWord = async (word: string): Promise<Painting[]> => {
+    try {
+      const response = await fetch(
+        `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${encodeURIComponent(
+          word
+        )}/1?json=2`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch painting: ${response.statusText}`);
+      }
+
+      const paintings = await response.json();
+      
+      if (!paintings?.[0]) {
+        throw new Error(`No painting found for word: ${word}`);
+      }
+
+      return paintings;
+    } catch (error) {
+      console.error(error)
+      throw new Error("Error fetching paintings");
+    }
   };
 
   useEffect(() => {
@@ -78,13 +73,16 @@ const useRandomPaintings = () => {
       setLoading(true);
 
       try {
-        const word = await getValidWord();
-        setBannedWords(prev => new Set(prev).add(word));
-        
+        const word = await fetchRandomWord();
         const paintingData = await fetchPaintingsByWord(word);
         setPaintings(paintingData);
-      } catch (error) {
-        setError("Error fetching painting");
+      } catch (err) {
+        // TypeScript will infer the type as `unknown`, so we need to type it
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred.");
+        }
         setPaintings(null);
       } finally {
         setLoading(false);
@@ -93,7 +91,7 @@ const useRandomPaintings = () => {
     };
 
     fetchRandomWordAndPainting();
-  }, []);
+  }, []); // Empty dependency array means this effect runs only once after the initial render
 
   return { paintings, loading, error };
 };

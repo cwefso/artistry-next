@@ -1,37 +1,49 @@
-import { useState, useEffect } from 'react'
+"use client";
+import { useState, useEffect } from 'react';
+import { ArtistPainting } from '../types';
 
-// Define a general interface for the response from the API (adjust fields as needed)
-interface ArtistInfo {
-  id: number
-  name: string
-  bio: string
-  imageUrl: string
-  // Add any other fields based on the actual API response
+
+interface UseArtistPaintingsResult {
+  paintings: ArtistPainting[];
+  isLoading: boolean;
+  error: string | null;
 }
 
-interface ArtistInfoResponse {
-  data: ArtistInfo[]
-}
-
-const useArtistInfo = (artistId: string): ArtistInfo[] => {
-  const [artistInfo, setArtistInfo] = useState<ArtistInfo[]>([])
+export const useArtistPaintings = (artistUrl: string): UseArtistPaintingsResult => {
+  const [paintings, setPaintings] = useState<ArtistPainting[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const url = `http://www.wikiart.org/en/App/Painting/PaintingsByArtist?artistUrl=${artistUrl}&json=2`
 
   useEffect(() => {
-    const loadArtistInfo = () => {
-      fetch('https://fe-cors-proxy.herokuapp.com', {
-        headers: {
-          'Target-URL': `https://www.wikiart.org/en/api/2/PaintingsByArtist?id=[${artistId}]`
+    const fetchArtistData = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Fetch artist info
+        const artistResponse = await fetch(`https://corsproxy.io/?url=${url}`);
+
+        if (!artistResponse.ok) {
+          throw new Error('Failed to fetch artist information');
         }
-      })
-        .then((res) => res.json())
-        .then((result: ArtistInfoResponse) => setArtistInfo(result.data))
-        .catch((err) => console.log(err.message))
+
+        const artistData = await artistResponse.json();
+        
+        setPaintings(artistData);
+
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred while fetching artist data');
+        console.error('Artist fetch error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (artistUrl) {
+      fetchArtistData();
     }
+  }, [artistUrl]);
 
-    loadArtistInfo()
-  }, [artistId])
-
-  return artistInfo
-}
-
-export default useArtistInfo
+  return { paintings, isLoading, error };
+};

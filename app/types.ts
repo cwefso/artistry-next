@@ -40,3 +40,30 @@ export interface PaintingInformation {
   image: string;
   height: number;
 }
+
+export interface ArtistPainting {
+  id: string;
+  title: string;
+  year: string;
+  image: string;
+  width: number;
+  height: number;
+  artistName: string;
+  completitionYear: number;
+  style: string;
+  genre: string;
+}
+
+export interface ArtistInfo {
+  id: string;
+  artistName: string;
+  biography: string;
+  birthDayAsString: string;
+  deathDayAsString: string;
+  image: string;
+  wikipediaUrl: string;
+  nationality: string;
+  activeYearsStart?: number;
+  activeYearsEnd?: number;
+  totalPaintings: number;
+}

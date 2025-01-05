@@ -1,105 +1,112 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { Painting } from "../types";
-import { GalleryLayout } from "./GalleryLayout"; // Assuming this is the layout for displaying the paintings
+import { useState, useCallback } from "react";
+import type { Painting } from "../types";
+import { GalleryLayout } from "./GalleryLayout";
+
+interface SearchState {
+  paintings: Painting[] | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+const INITIAL_STATE: SearchState = {
+  paintings: null,
+  isLoading: false,
+  error: null,
+};
 
 export const Search = () => {
-  const [searchTerm, setSearchTerm] = useState<string>(""); // Local input state
-  const [submittedTerm, setSubmittedTerm] = useState<string>(""); // Track the submitted search term
-  const [paintings, setPaintings] = useState<Painting[] | null>(null); // Paintings data
-  const [loading, setLoading] = useState<boolean>(false); // Loading state
-  const [error, setError] = useState<string>(""); // Error state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [{ paintings, isLoading, error }, setSearchState] =
+    useState<SearchState>(INITIAL_STATE);
 
-  const hasFetched = useRef(false); // Ref to prevent fetching on re-renders
+  const fetchPaintingsByWord = useCallback(
+    async (word: string): Promise<Painting[]> => {
+      const endpoint = `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${encodeURIComponent(
+        word
+      )}/1?json=2`;
+
+      const response = await fetch(endpoint);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch paintings: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data) || !data.length) {
+        throw new Error(`No paintings found for: ${word}`);
+      }
+
+      return data;
+    },
+    []
+  );
+
+  const handleSearchSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const trimmedTerm = searchTerm.trim();
+    if (!trimmedTerm) return;
+
+    setSearchState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      const paintingsData = await fetchPaintingsByWord(trimmedTerm);
+      setSearchState({
+        paintings: paintingsData,
+        isLoading: false,
+        error: null,
+      });
+    } catch (err) {
+      setSearchState({
+        paintings: null,
+        isLoading: false,
+        error:
+          err instanceof Error ? err.message : "An unexpected error occurred",
+      });
+    }
+  };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleSearchSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (searchTerm.trim()) {
-      setSubmittedTerm(searchTerm.trim()); // Set the submitted term and trigger the search
-    }
-  };
-
-  const fetchPaintingsByWord = async (word: string): Promise<Painting[]> => {
-    try {
-      const response = await fetch(
-        `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${encodeURIComponent(
-          word
-        )}/1?json=2`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch painting: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (!data?.[0]) {
-        throw new Error(`No paintings found for the word: ${word}`);
-      }
-
-      return data;
-    } catch (err) {
-      throw new Error("Error fetching paintings");
-    }
-  };
-
-  useEffect(() => {
-    if (hasFetched.current || !submittedTerm.trim()) return; // Prevent re-fetching on initial render
-
-    const fetchPaintings = async () => {
-      setLoading(true);
-      setError(""); // Reset error before fetching
-
-      try {
-        const paintingsData = await fetchPaintingsByWord(submittedTerm);
-        setPaintings(paintingsData);
-      } catch (err) {
-        setError("Error fetching paintings");
-        setPaintings(null);
-      } finally {
-        setLoading(false);
-        hasFetched.current = true;
-      }
-    };
-
-    fetchPaintings(); // Fetch paintings when the term is submitted
-  }, [submittedTerm]); // Trigger effect when submittedTerm changes
-
   return (
-    <div className="search-container">
-      <form onSubmit={handleSearchSubmit} className="search-form">
+    <div className="space-y-4">
+      <form onSubmit={handleSearchSubmit} className="flex gap-2">
         <input
           type="text"
           placeholder="Search for a painting..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="search-input text-black"
+          className="flex-1 px-4 py-2 text-black rounded border"
+          aria-label="Search paintings"
         />
-        <button type="submit" className="search-button">
-          Search
+        <button
+          type="submit"
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+          disabled={isLoading}
+        >
+          {isLoading ? "Searching..." : "Search"}
         </button>
       </form>
 
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && (
+        <div role="alert" className="text-red-500">
+          {error}
+        </div>
+      )}
 
-      {paintings && paintings.length > 0 ? (
-        <>
-          <h2 className="results-title">Search Results:</h2>
-          <GalleryLayout
-            paintings={paintings}
-            loading={loading}
-            error={error}
-          />
-        </>
+      {paintings?.length ? (
+        <section aria-label="Search Results">
+          <h2 className="text-xl font-bold mb-4">Search Results</h2>
+          <GalleryLayout paintings={paintings} />
+        </section>
       ) : (
-        submittedTerm &&
-        !loading &&
+        searchTerm &&
+        !isLoading &&
         !error && (
-          <p className="no-results">No results found for "{submittedTerm}"</p>
+          <p className="text-gray-500">No results found for "{searchTerm}"</p>
         )
       )}
     </div>

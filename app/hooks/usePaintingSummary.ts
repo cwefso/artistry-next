@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { PaintingInformation } from '../types'
 
-const usePaintingSummary = (contentId: string | number) => {
+const usePaintingSummary = (contentId: string | number | null) => {
   const [paintingDetails, setPaintingDetails] = useState<PaintingInformation | null>(null)
 
   const url =  `http://www.wikiart.org/en/App/Painting/ImageJson/${contentId}`
@@ -17,7 +17,7 @@ const usePaintingSummary = (contentId: string | number) => {
     if (contentId) {
       getPaintingDetails()
     }
-  }, [contentId])
+  }, [contentId, url])
   return paintingDetails
 }
 
