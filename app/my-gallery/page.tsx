@@ -54,13 +54,6 @@ export default function MyGallery() {
     fetchGallery();
   }, []);
 
-  // Sanitize title for URL
-  const sanitizeTitle = (title: string) =>
-    title
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
-
   return (
     <main>
       <section className="header w-full flex flex-row justify-between">

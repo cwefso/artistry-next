@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Painting } from "../types";
 import { PaintingCard } from "./PaintingCard";
