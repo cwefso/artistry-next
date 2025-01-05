@@ -106,7 +106,9 @@ export const Search = () => {
         searchTerm &&
         !isLoading &&
         !error && (
-          <p className="text-gray-500">No results found for "{searchTerm}"</p>
+          <p className="text-gray-500">
+            No results found for &quot;{searchTerm}&quot;
+          </p>
         )
       )}
     </div>

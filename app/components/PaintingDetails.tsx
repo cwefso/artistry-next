@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import type { PaintingInformation } from "../types";
-// import SavePainting from "./SavePainting";
 import Image from "next/image";
 import DeletePainting from "./DeletePainting";
 import { SignedIn } from "@clerk/nextjs";
