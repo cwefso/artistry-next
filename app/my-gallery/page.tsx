@@ -71,7 +71,7 @@ export default function MyGallery() {
           Your gallery is empty. Start adding paintings to see them here!
         </p>
       ) : (
-        <GalleryLayout paintings={paintings} loading={loading} error={error} />
+        <GalleryLayout paintings={paintings} />
       )}
     </main>
   );
