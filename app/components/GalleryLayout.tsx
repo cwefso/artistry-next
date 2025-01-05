@@ -1,4 +1,3 @@
-// components/GalleryLayout.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -47,11 +46,16 @@ export function GalleryLayout({
         })
       );
 
-      setValidPaintings(
-        validatedPaintings
-          .filter(({ isValid }) => isValid)
-          .map(({ painting }) => painting)
+      // Filter duplicates based on contentId (or other unique property)
+      const uniquePaintings = Array.from(
+        new Map(
+          validatedPaintings
+            .filter(({ isValid }) => isValid) // Keep only valid paintings
+            .map(({ painting }) => [painting.contentId, painting]) // Map contentId to painting
+        ).values()
       );
+
+      setValidPaintings(uniquePaintings); // Set valid and unique paintings
     };
 
     validatePaintings();
@@ -74,7 +78,7 @@ export function GalleryLayout({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {validPaintings.map((painting: Painting) => (
               <PaintingCard
-                key={painting.contentId}
+                key={painting.contentId} // Ensure unique key for each PaintingCard
                 painting={painting}
                 sanitizeTitle={sanitizeTitle}
               />
