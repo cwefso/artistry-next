@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
 import type { PaintingInformation } from "../types";
-import SavePainting from "./savePainting";
+import SavePainting from "./SavePainting";
 import Image from "next/image";
+import DeletePainting from "./DeletePainting";
+import { SignedIn } from "@clerk/nextjs";
 
 interface PaintingDetailsProps {
   painting: PaintingInformation | null;
@@ -61,7 +63,6 @@ export default function PaintingDetails({ painting }: PaintingDetailsProps) {
     );
   }
 
-  console.log("painting:", painting);
   return (
     <article className="max-w-4xl mx-auto">
       <header>
@@ -121,10 +122,16 @@ export default function PaintingDetails({ painting }: PaintingDetailsProps) {
         </section>
 
         <MarketInformation painting={painting} />
-        <SavePainting
-          painting={painting}
-          onSaveSuccess={() => console.log("Saved successfully!")}
-        />
+        <SignedIn>
+          <SavePainting
+            painting={painting}
+            onSaveSuccess={() => console.log("Saved successfully!")}
+          />
+          <DeletePainting
+            painting={painting}
+            onDeleteSuccess={() => console.log("Deleted successfully")}
+          />
+        </SignedIn>
       </div>
     </article>
   );

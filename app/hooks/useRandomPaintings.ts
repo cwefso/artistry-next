@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Painting } from "../types";
 
+
 interface FetchWordResponse {
   word: string;
 }
@@ -28,7 +29,7 @@ const useRandomPaintings = () => {
       }
 
       const { word } = (await response.json()) as FetchWordResponse;
-
+      console.log("randomWord,", word)
       if (!word) {
         throw new Error("No word received from API");
       }

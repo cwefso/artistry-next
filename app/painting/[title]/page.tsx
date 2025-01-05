@@ -27,11 +27,6 @@ export default function Page() {
         </button>
 
         <PaintingDetails painting={painting} />
-        <div className="mt-6 flex justify-center">
-          <button className="border border-red-500 text-red-500 py-2 px-4 rounded-md hover:bg-red-500 hover:text-white transition-colors">
-            Delete from Gallery
-          </button>
-        </div>
       </div>
     </div>
   );

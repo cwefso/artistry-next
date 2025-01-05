@@ -4,7 +4,7 @@ import useRandomPaintings from "../hooks/useRandomPaintings";
 import { GalleryLayout } from "../components/GalleryLayout";
 
 export default function Home() {
-  const { paintings, loading, error } = useRandomPaintings();
+  const { paintings, loading } = useRandomPaintings();
 
   if (loading || !paintings) {
     return (
@@ -14,7 +14,5 @@ export default function Home() {
     );
   }
 
-  return (
-    <GalleryLayout paintings={paintings} loading={loading} error={error} />
-  );
+  return <GalleryLayout paintings={paintings} />;
 }

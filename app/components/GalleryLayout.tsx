@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Painting } from "../types";
 import { PaintingCard } from "./PaintingCard";
 
@@ -8,6 +8,7 @@ interface GalleryLayoutProps {
 
 export function GalleryLayout({ paintings }: GalleryLayoutProps) {
   const [validPaintings, setValidPaintings] = useState<Painting[]>([]);
+  const paintingsValidated = useRef(false);
 
   const isImageValid = async (url: string): Promise<boolean> => {
     try {
@@ -25,28 +26,30 @@ export function GalleryLayout({ paintings }: GalleryLayoutProps) {
       .replace(/[^a-z0-9-]/g, "");
 
   useEffect(() => {
-    const validatePaintings = async () => {
-      if (!paintings) return;
+    if (paintings) {
+      const validatePaintings = async () => {
+        paintingsValidated.current = true; // Mark as validated
 
-      const validatedPaintings = await Promise.all(
-        paintings.map(async (painting: Painting) => {
-          const isValid = await isImageValid(painting.image as string);
-          return { painting, isValid };
-        })
-      );
+        const validatedPaintings = await Promise.all(
+          paintings.map(async (painting: Painting) => {
+            const isValid = await isImageValid(painting.image as string);
+            return { painting, isValid };
+          })
+        );
 
-      const uniquePaintings = Array.from(
-        new Map(
-          validatedPaintings
-            .filter(({ isValid }) => isValid)
-            .map(({ painting }) => [painting.contentId, painting])
-        ).values()
-      );
+        const uniquePaintings = Array.from(
+          new Map(
+            validatedPaintings
+              .filter(({ isValid }) => isValid)
+              .map(({ painting }) => [painting.contentId, painting])
+          ).values()
+        );
 
-      setValidPaintings(uniquePaintings);
-    };
+        setValidPaintings(uniquePaintings);
+      };
 
-    validatePaintings();
+      validatePaintings();
+    }
   }, [paintings]);
 
   return (

@@ -8,5 +8,6 @@ export default function Gallery() {
   const { paintings } = usePaintings(
     "http://www.wikiart.org/en/App/Painting/MostViewedPaintings"
   );
+
   return <GalleryLayout paintings={paintings} />;
 }

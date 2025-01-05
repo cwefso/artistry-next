@@ -1,69 +1,70 @@
 "use client";
 import type { ArtistPainting, PaintingInformation } from "../types";
-import useSavePainting from "../hooks/useSavePainting";
+import useDeletePainting from "../hooks/useDeletePainting";
 import LoadingSpinner from "./LoadingSpinner";
 
-interface SavePaintingProps {
+interface DeletePaintingProps {
   painting: PaintingInformation | ArtistPainting;
-  onSaveSuccess?: () => void;
-  onSaveError?: (error: string) => void;
+  onDeleteSuccess?: () => void;
+  onDeleteError?: (error: string) => void;
   className?: string;
   variant?: "primary" | "secondary" | "minimal";
 }
 
 const VARIANT_STYLES = {
-  primary: "bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg",
+  primary: "bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg",
   secondary: "bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg",
-  minimal: "text-blue-400 hover:text-blue-300 underline",
+  minimal: "text-red-400 hover:text-red-300 underline",
 };
 
-const SavePainting = ({
+const DeletePainting = ({
   painting,
-  onSaveSuccess,
-  onSaveError,
+  onDeleteSuccess,
+  onDeleteError,
   className = "",
   variant = "primary",
-}: SavePaintingProps) => {
-  const { saveStatus, savePainting } = useSavePainting();
+}: DeletePaintingProps) => {
+  const { deleteStatus, deletePainting } = useDeletePainting();
 
-  const handleSave = () => savePainting(painting, onSaveSuccess, onSaveError);
+  const handleDelete = () =>
+    deletePainting(painting, onDeleteSuccess, onDeleteError);
 
   return (
     <div className={`inline-flex flex-col items-center ${className}`}>
       <button
-        onClick={handleSave}
-        disabled={saveStatus.isLoading}
+        onClick={handleDelete}
+        disabled={deleteStatus.isLoading}
         className={`
           ${VARIANT_STYLES[variant]}
-          ${saveStatus.isLoading ? "opacity-50 cursor-not-allowed" : ""}
+          ${deleteStatus.isLoading ? "opacity-50 cursor-not-allowed" : ""}
           transition-colors duration-200
         `}
-        aria-busy={saveStatus.isLoading}
+        aria-busy={deleteStatus.isLoading}
       >
         <span className="flex items-center gap-2">
-          {saveStatus.isLoading ? (
+          {deleteStatus.isLoading ? (
             <>
               <LoadingSpinner />
-              Saving...
+              Deleting...
             </>
           ) : (
-            "Save to Gallery"
+            "Delete from Gallery"
           )}
         </span>
       </button>
 
-      {saveStatus.success && (
+      {deleteStatus.success && (
         <p className="mt-2 text-sm text-green-500" role="status">
-          Painting saved!
+          Painting deleted!
         </p>
       )}
-      {saveStatus.error && (
+      {deleteStatus.error && (
         <p className="mt-2 text-sm text-red-500" role="alert">
-          {saveStatus.error}
+          {deleteStatus.error}
         </p>
       )}
     </div>
   );
 };
 
-export default SavePainting;
+export default DeletePainting;
