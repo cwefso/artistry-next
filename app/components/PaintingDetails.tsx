@@ -4,7 +4,7 @@ import type { PaintingInformation } from "../types";
 import Image from "next/image";
 import DeletePainting from "./DeletePainting";
 import { SignedIn } from "@clerk/nextjs";
-import SavePainting from "./SavePainting";
+import SavePaintingButton from "./SavePaintingButton";
 
 interface PaintingDetailsProps {
   painting: PaintingInformation | null;
@@ -123,7 +123,7 @@ export default function PaintingDetails({ painting }: PaintingDetailsProps) {
 
         <MarketInformation painting={painting} />
         <SignedIn>
-          <SavePainting
+          <SavePaintingButton
             painting={painting}
             onSaveSuccess={() => console.log("Saved successfully!")}
           />
