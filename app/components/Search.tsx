@@ -62,7 +62,7 @@ export const Search = () => {
         paintings: null,
         isLoading: false,
         error:
-          err instanceof Error ? err.message : "An unexpected error occurred",
+          err instanceof Error ? err.message : `An unexpected error occurred`,
       });
     }
   };

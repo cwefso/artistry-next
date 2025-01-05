@@ -13,9 +13,9 @@ export const useArtistPaintings = (artistUrl: string): UseArtistPaintingsResult 
   const [paintings, setPaintings] = useState<ArtistPainting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const url = `http://www.wikiart.org/en/App/Painting/PaintingsByArtist?artistUrl=${artistUrl}&json=2`
-
+  
   useEffect(() => {
+    const url = `http://www.wikiart.org/en/App/Painting/PaintingsByArtist?artistUrl=${artistUrl}&json=2`
     const fetchArtistData = async () => {
       setIsLoading(true);
       setError(null);
