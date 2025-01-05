@@ -5,7 +5,7 @@ const usePaintings = (initialUrl: string) => {
   const [paintings, setPaintings] = useState<Painting[]>([]);
   const [url, setUrl] = useState<string>(initialUrl);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<string>("false");
 
   // Fisher-Yates shuffle algorithm to shuffle the array
   const shuffleArray = (array: Painting[]): Painting[] => {
@@ -18,7 +18,7 @@ const usePaintings = (initialUrl: string) => {
   };
 
   useEffect(() => {
-    setError(false);
+    setError("false");
     setLoading(true);
 
     const loadPaintings = async () => {
@@ -31,7 +31,7 @@ const usePaintings = (initialUrl: string) => {
         const shuffled = shuffleArray(result);
         setPaintings(shuffled);
       } catch (err) {
-        setError(true);
+        setError("true");
       } finally {
         setLoading(false);
       }

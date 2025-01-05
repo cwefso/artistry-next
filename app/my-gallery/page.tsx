@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Painting } from "../types";
+import { GalleryLayout } from "../components/GalleryLayout";
 
 export default function MyGallery() {
   const [paintings, setPaintings] = useState<Painting[]>([]);
@@ -79,42 +78,7 @@ export default function MyGallery() {
           Your gallery is empty. Start adding paintings to see them here!
         </p>
       ) : (
-        <section className="gallery" aria-label="gallery">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {validPaintings.map((painting: Painting) => (
-              <Link
-                key={painting.contentId}
-                href={{
-                  pathname: `/painting/${sanitizeTitle(
-                    painting.title || "untitled"
-                  )}`,
-                  query: {
-                    artistName: painting.artistName,
-                    image: painting.image,
-                    width: painting.width,
-                    height: painting.height,
-                  },
-                }}
-              >
-                <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md">
-                  <Image
-                    src={painting.image as string}
-                    alt={painting.title || "Untitled"}
-                    width={painting.width || 300}
-                    height={painting.height || 300}
-                    className="rounded-md shadow-lg"
-                  />
-                  <p className="text-center mt-2 text-lg">
-                    {painting.title || "Untitled"}
-                  </p>
-                  <p className="text-center text-sm text-gray-500">
-                    {painting.artistName || "Unknown Artist"}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+        <GalleryLayout paintings={paintings} loading={loading} error={error} />
       )}
     </main>
   );

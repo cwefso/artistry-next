@@ -1,27 +1,16 @@
 import { useState, useEffect } from 'react'
-
-// Define the expected structure of the painting details returned from the API
-interface PaintingDetails {
-  id: number
-  title: string
-  artistName: string
-  imageUrl: string
-  year: number
-  // Add any other fields that are relevant to the painting details you expect
-}
+import { PaintingInformation } from '../types'
 
 const usePaintingSummary = (contentId: string | number) => {
-  const [paintingDetails, setPaintingDetails] = useState<PaintingDetails | null>(null)
+  const [paintingDetails, setPaintingDetails] = useState<PaintingInformation | null>(null)
+
+  const url =  `http://www.wikiart.org/en/App/Painting/ImageJson/${contentId}`
 
   useEffect(() => {
     const getPaintingDetails = () => {
-      fetch('https://fe-cors-proxy.herokuapp.com', {
-        headers: {
-          'Target-URL': `http://www.wikiart.org/en/App/Painting/ImageJson/${contentId}`
-        }
-      })
+      fetch(`https://corsproxy.io/?url=${url}`)
         .then((res) => res.json())
-        .then((res: PaintingDetails) => setPaintingDetails(res)) // Set the painting details correctly
+        .then((res: PaintingInformation) => setPaintingDetails(res)) // Set the painting details correctly
         .catch((err) => console.log(err))
     }
     
@@ -29,7 +18,6 @@ const usePaintingSummary = (contentId: string | number) => {
       getPaintingDetails()
     }
   }, [contentId])
-
   return paintingDetails
 }
 

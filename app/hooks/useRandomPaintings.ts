@@ -6,9 +6,10 @@ interface FetchWordResponse {
   word: string;
 }
 
-const useRandomPainting = () => {
-  const [painting, setPainting] = useState<Painting | null>(null);
+const useRandomPaintings = () => {
+  const [paintings, setPaintings] = useState<Painting[] | null>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("")
   const [bannedWords, setBannedWords] = useState<Set<string>>(new Set());
   const hasFetched = useRef(false);
 
@@ -34,7 +35,7 @@ const useRandomPainting = () => {
     return word;
   };
 
-  const fetchPaintingByWord = async (word: string): Promise<Painting> => {
+  const fetchPaintingsByWord = async (word: string): Promise<Painting[]> => {
     const response = await fetch(
       `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${encodeURIComponent(word)}/1?json=2`
     );
@@ -49,7 +50,7 @@ const useRandomPainting = () => {
       throw new Error(`No painting found for word: ${word}`);
     }
 
-    return paintings[0];
+    return paintings;
   };
 
   const getValidWord = async (): Promise<string> => {
@@ -80,11 +81,11 @@ const useRandomPainting = () => {
         const word = await getValidWord();
         setBannedWords(prev => new Set(prev).add(word));
         
-        const paintingData = await fetchPaintingByWord(word);
-        setPainting(paintingData);
+        const paintingData = await fetchPaintingsByWord(word);
+        setPaintings(paintingData);
       } catch (error) {
-        console.error("Error fetching painting:", error instanceof Error ? error.message : "Unknown error");
-        setPainting(null);
+        setError("Error fetching painting");
+        setPaintings(null);
       } finally {
         setLoading(false);
         hasFetched.current = true;
@@ -94,7 +95,7 @@ const useRandomPainting = () => {
     fetchRandomWordAndPainting();
   }, []);
 
-  return { painting, loading };
+  return { paintings, loading, error };
 };
 
-export default useRandomPainting;
+export default useRandomPaintings;
