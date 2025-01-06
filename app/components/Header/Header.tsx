@@ -34,6 +34,9 @@ const Header = () => {
               Popular
             </Link>
           )}
+          <Link href="/my-gallery" className={buttonClass}>
+            My Gallery
+          </Link>
           <Link href="/search" className={buttonClass}>
             Search
           </Link>
