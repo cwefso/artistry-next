@@ -43,11 +43,11 @@ function PaintingsContent({ searchQuery }: PaintingsContentProps) {
 }
 
 interface ResultsPageProps {
-  searchParams?: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }
 
 export default function ResultsPage({ searchParams }: ResultsPageProps) {
-  const searchQuery = searchParams?.q;
+  const { q: searchQuery } = use(searchParams);
 
   if (!searchQuery) {
     return <div className="p-4">Please provide a search query.</div>;

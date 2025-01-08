@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import PaintingDetails from "@/app/components/Painting/PaintingDetails";
+import { use } from "react";
 
 interface SearchParams {
   contentId?: string;
@@ -26,21 +27,21 @@ async function fetchPaintingDetails(contentId: string) {
   }
 }
 
-export default async function Page({
+export default function Page({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
-  const contentId = searchParams?.contentId;
+  const { contentId } = use(searchParams);
 
   if (!contentId) {
-    notFound(); // Redirects to 404 page if contentId is missing
+    notFound(); // Redirect to 404 page if contentId is missing
   }
 
-  const painting = await fetchPaintingDetails(contentId);
+  const painting = use(fetchPaintingDetails(contentId));
 
   if (!painting) {
-    notFound(); // Redirects to 404 page if painting details are not found
+    notFound(); // Redirect to 404 page if painting details are not found
   }
 
   return (
