@@ -1,31 +1,51 @@
-"use client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import PaintingDetails from "@/app/components/Painting/PaintingDetails";
-import usePaintingSummary from "@/app/hooks/usePaintingSummary";
 
-export default function Page() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const contentId = searchParams.get("contentId");
+interface SearchParams {
+  contentId?: string;
+}
 
-  // Always call the hook, and handle the error within the component render.
-  const painting = usePaintingSummary(contentId);
+async function fetchPaintingDetails(contentId: string) {
+  const url = `http://www.wikiart.org/en/App/Painting/ImageJson/${contentId}`;
 
-  // If no contentId, show an error message.
+  try {
+    const response = await fetch(`https://corsproxy.io/?url=${url}`, {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch painting details for contentId: ${contentId}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: SearchParams;
+}) {
+  const contentId = searchParams?.contentId;
+
   if (!contentId) {
-    return <div>Error: No content ID provided</div>;
+    notFound(); // Redirects to 404 page if contentId is missing
+  }
+
+  const painting = await fetchPaintingDetails(contentId);
+
+  if (!painting) {
+    notFound(); // Redirects to 404 page if painting details are not found
   }
 
   return (
     <div className="min-h-screen">
       <div className="p-6">
-        <button
-          onClick={() => router.back()}
-          className="mb-6 border border-white text-white py-2 px-4 rounded-md hover:bg-white hover:text-black transition-colors"
-        >
-          Back
-        </button>
-
         <PaintingDetails painting={painting} />
       </div>
     </div>

@@ -1,10 +1,8 @@
-"use client";
-
-import { Suspense, useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { GalleryLayout } from "../components/Gallery/GalleryLayout";
+import { Suspense, use } from "react";
+import GalleryLayout from "../components/Gallery/GalleryLayout";
 import type { Painting } from "../types";
 
+// Fetch function for paintings
 const fetchPaintings = async (searchQuery: string): Promise<Painting[]> => {
   const endpoint = `https://corsproxy.io/?url=https://www.wikiart.org/en/search/${encodeURIComponent(
     searchQuery
@@ -25,64 +23,42 @@ const fetchPaintings = async (searchQuery: string): Promise<Painting[]> => {
   return data;
 };
 
-const PaintingsLoader = ({ searchQuery }: { searchQuery: string }) => {
-  const [paintings, setPaintings] = useState<Painting[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+// Promise for paintings (used with `use`)
+const getPaintingsPromise = (searchQuery: string) =>
+  fetchPaintings(searchQuery);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await fetchPaintings(searchQuery);
-        setPaintings(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unexpected error occurred"
-        );
-      }
-    };
+interface PaintingsContentProps {
+  searchQuery: string;
+}
 
-    fetchData();
-  }, [searchQuery]);
+function PaintingsContent({ searchQuery }: PaintingsContentProps) {
+  // Use the `use` API to read the data and suspend rendering until it's resolved.
+  const paintings = use(getPaintingsPromise(searchQuery));
 
-  if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+  if (!paintings.length) {
+    return <p className="p-4 text-gray-500">No results found</p>;
   }
 
-  if (!paintings) {
-    return <div className="p-4">Loading...</div>;
-  }
+  return <GalleryLayout paintings={paintings} />;
+}
 
-  return (
-    <>
-      {paintings.length ? (
-        <GalleryLayout paintings={paintings} />
-      ) : (
-        <p className="text-gray-500">No results found</p>
-      )}
-    </>
-  );
-};
+interface ResultsPageProps {
+  searchParams?: { q?: string };
+}
 
-const ResultsContent = () => {
-  const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("q");
+export default function ResultsPage({ searchParams }: ResultsPageProps) {
+  const searchQuery = searchParams?.q;
 
   if (!searchQuery) {
     return <div className="p-4">Please provide a search query.</div>;
   }
 
-  return <PaintingsLoader searchQuery={searchQuery} />;
-};
-
-const ResultsPage = () => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Search Results</h1>
       <Suspense fallback={<div className="p-4">Loading...</div>}>
-        <ResultsContent />
+        <PaintingsContent searchQuery={searchQuery} />
       </Suspense>
     </div>
   );
-};
-
-export default ResultsPage;
+}
