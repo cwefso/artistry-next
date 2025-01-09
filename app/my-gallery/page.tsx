@@ -2,7 +2,7 @@ import GalleryLayout from "../components/Gallery/GalleryLayout";
 
 async function getGallery() {
   // This runs on the server
-  const response = await fetch(`${process.env.API_URL}/api/userGallery`, {
+  const response = await fetch(`/api/userGallery`, {
     cache: "no-store", // or use revalidate if you want
   });
 
