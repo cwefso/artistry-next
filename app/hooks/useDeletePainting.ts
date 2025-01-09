@@ -26,10 +26,11 @@ const useDeletePainting = () => {
     setDeleteStatus({ ...INITIAL_DELETE_STATUS, isLoading: true });
 
     try {
-      const response = await fetch(`${process.env.API_URL}/api/userGallery`, {
+
+      const response = await fetch(`http://localhost:3000/api/userGallery`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: painting.title }), // Assuming `title` is the unique identifier for the painting
+        body: JSON.stringify({ title: painting.title }),
       });
 
       const data = await response.json();

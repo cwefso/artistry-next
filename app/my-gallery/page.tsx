@@ -1,28 +1,23 @@
+import { currentUser } from "@clerk/nextjs/server";
+import { Painting } from "../types";
 import GalleryLayout from "../components/Gallery/GalleryLayout";
 
-async function getGallery() {
-  // This runs on the server
-  const response = await fetch(`/api/userGallery`, {
-    cache: "no-store", // or use revalidate if you want
-  });
+export default async function MyGallery() {
+  const user = await currentUser();
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch gallery");
+  if (!user) {
+    return <div>You are not authorized to view this page.</div>;
   }
 
-  return response.json();
-}
+  try {
+    const userMetadata = await user.privateMetadata;
+    const gallery: Painting[] = Array.isArray(userMetadata?.gallery)
+      ? userMetadata.gallery
+      : [];
 
-export default async function MyGallery() {
-  const initialData = await getGallery();
-
-  return (
-    <main>
-      <section className="header w-full flex flex-row justify-between">
-        <h1 className="page-title">My Gallery</h1>
-      </section>
-
-      <GalleryLayout paintings={initialData} />
-    </main>
-  );
+    return <GalleryLayout paintings={gallery} />;
+  } catch (error) {
+    console.error(error);
+    return <div>Error loading gallery.</div>;
+  }
 }
