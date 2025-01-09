@@ -31,9 +31,8 @@ export default function ArtistPage({
 }) {
   const { name } = use(params);
 
+  const paintings = use(fetchArtistPaintings(name));
   try {
-    const paintings = use(fetchArtistPaintings(name));
-
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <GalleryLayout paintings={paintings} />
