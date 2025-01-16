@@ -24,7 +24,7 @@ const useSavePainting = () => {
     setSaveStatus({ ...INITIAL_SAVE_STATUS, isLoading: true });
 
     try {
-      const response = await fetch("/api/userGallery", {
+      const response = await fetch(`${process.env.API_URL}/api/userGallery`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ metadataValue: painting }),

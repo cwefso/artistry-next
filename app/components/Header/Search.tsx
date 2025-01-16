@@ -1,14 +1,15 @@
 "use client";
+
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef } from "react";
 
 export const SearchBar = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchTerm = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const trimmedTerm = searchTerm.trim();
+    const trimmedTerm = searchTerm.current?.value.trim();
     if (!trimmedTerm) return;
 
     router.push(`/results?q=${encodeURIComponent(trimmedTerm)}`);
@@ -20,8 +21,7 @@ export const SearchBar = () => {
         <input
           type="text"
           placeholder="Search for a painting..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          ref={searchTerm} // Attach the ref to the input
           className="flex-1 px-4 py-2 text-black rounded border"
           aria-label="Search paintings"
         />
