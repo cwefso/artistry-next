@@ -1,7 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { SearchBar } from "./Search";
 import Link from "next/link";
-import Image from "next/image";
 
 const Header = () => {
   return (
