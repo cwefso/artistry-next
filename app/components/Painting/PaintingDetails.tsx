@@ -10,7 +10,6 @@ interface PaintingDetailsProps {
   painting: PaintingInformation | null;
 }
 
-// These components can stay server components as they're just UI
 const InfoRow = ({
   label,
   value,
@@ -18,7 +17,17 @@ const InfoRow = ({
   label: string;
   value: React.ReactNode;
 }) => {
-  if (!value) return null;
+  // Define values that should not render the row
+  const isInvalidValue =
+    value === null ||
+    value === undefined ||
+    value === "" ||
+    value === "Unknown" ||
+    value === `null x null cm` ||
+    value === "None";
+
+  if (isInvalidValue) return null;
+
   return (
     <div className="grid grid-cols-3 gap-4 py-2 border-b border-gray-700">
       <dt className="text-gray-400">{label}</dt>
@@ -105,7 +114,43 @@ export default function PaintingDetails({ painting }: PaintingDetailsProps) {
                 </Link>
               }
             />
-            {/* Other InfoRows... */}
+            <InfoRow label="Title" value={painting.title} />
+            <InfoRow
+              label="Completion Year"
+              value={painting.completitionYear}
+            />
+            <InfoRow label="Period" value={painting.period || "Unknown"} />
+            <InfoRow label="Style" value={painting.style} />
+            <InfoRow label="Genre" value={painting.genre} />
+            <InfoRow label="Material" value={painting.material || "Unknown"} />
+            <InfoRow
+              label="Technique"
+              value={painting.technique || "Unknown"}
+            />
+            <InfoRow label="Series" value={painting.serie} />
+            <InfoRow
+              label="Size"
+              value={`${painting.sizeX} x ${painting.sizeY} cm`}
+            />
+            {painting.diameter && (
+              <InfoRow label="Diameter" value={`${painting.diameter} cm`} />
+            )}
+            <InfoRow label="Location" value={painting.location || "Unknown"} />
+            <InfoRow label="Auction" value={painting.auction || "None"} />
+            <InfoRow
+              label="Year of Trade"
+              value={painting.yearOfTrade || "Unknown"}
+            />
+            <InfoRow
+              label="Last Price"
+              value={painting.lastPrice ? `$${painting.lastPrice}` : "Unknown"}
+            />
+            <InfoRow label="Gallery" value={painting.galleryName} />
+            <InfoRow label="Tags" value={painting.tags || "None"} />
+            <InfoRow
+              label="Description"
+              value={painting.description || "No description available."}
+            />
           </dl>
         </section>
 

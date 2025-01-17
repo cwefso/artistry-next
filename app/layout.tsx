@@ -12,7 +12,7 @@ export default function RootLayout({
       <html lang="en">
         <body>
           <Header />
-          <section className="m-4">{children}</section>
+          <section className="m-4 ">{children}</section>
         </body>
       </html>
     </ClerkProvider>
