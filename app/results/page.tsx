@@ -55,7 +55,6 @@ export default function ResultsPage({ searchParams }: ResultsPageProps) {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Search Results</h1>
       <Suspense fallback={<div className="p-4">Loading...</div>}>
         <PaintingsContent searchQuery={searchQuery} />
       </Suspense>

@@ -15,7 +15,7 @@ export function PaintingCard({ painting, sanitizeTitle }: PaintingCardProps) {
       }`}
       className="block"
     >
-      <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md">
+      <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md my-6 break-inside-avoid">
         <Image
           src={painting.image as string}
           alt={`Artwork: ${painting.title}`}

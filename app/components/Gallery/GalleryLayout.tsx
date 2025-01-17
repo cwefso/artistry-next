@@ -47,7 +47,7 @@ export default async function GalleryLayout({ paintings }: GalleryLayoutProps) {
   return (
     <main>
       <section className="gallery" aria-label="gallery">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="columns-1 sm:columns-2 md:columns-3 gap-6 auto-rows-auto">
           {validPaintings.map((painting: Painting) => (
             <PaintingCard
               key={painting.contentId}
