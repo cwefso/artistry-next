@@ -1,5 +1,8 @@
+"use client";
+
 import { Painting } from "../../types";
 import { PaintingCard } from "./PaintingCard";
+import { useEffect, useState } from "react";
 
 interface GalleryLayoutProps {
   paintings: Painting[];
@@ -37,8 +40,28 @@ async function validatePaintings(paintings: Painting[]): Promise<Painting[]> {
   );
 }
 
-export default async function GalleryLayout({ paintings }: GalleryLayoutProps) {
-  const validPaintings = await validatePaintings(paintings);
+export default function GalleryLayout({ paintings }: GalleryLayoutProps) {
+  const [validPaintings, setValidPaintings] = useState<Painting[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPaintings = async () => {
+      const validatedPaintings = await validatePaintings(paintings);
+      setValidPaintings(validatedPaintings);
+      setLoading(false); // Set loading to false once the images are validated
+    };
+
+    loadPaintings();
+  }, [paintings]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="spinner">Loading images...</div>{" "}
+        {/* You can replace this with a loading spinner */}
+      </div>
+    );
+  }
 
   if (!validPaintings.length) {
     return <div>No valid paintings found.</div>;
