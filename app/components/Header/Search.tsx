@@ -13,6 +13,9 @@ export const SearchBar = () => {
     if (!trimmedTerm) return;
 
     router.push(`/results?q=${encodeURIComponent(trimmedTerm)}`);
+    if (searchTerm.current) {
+      searchTerm.current.value = "";
+    }
   };
 
   return (
@@ -21,7 +24,7 @@ export const SearchBar = () => {
         <input
           type="text"
           placeholder="Search for a painting..."
-          ref={searchTerm} // Attach the ref to the input
+          ref={searchTerm}
           className="flex-1 px-4 py-2 text-black rounded border"
           aria-label="Search paintings"
         />
