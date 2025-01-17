@@ -1,0 +1,25 @@
+{
+    "name": "ArtisTry",
+    "short_name": "ArtisTry",
+    "description": "Explore a collection of artworks and paintings in this creative app.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4A90E2",
+    "icons": [
+      {
+        "src": "icons/icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icons/icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ],
+    "scope": "/",
+    "orientation": "portrait",
+    "lang": "en-US"
+  }
+  

@@ -27,7 +27,7 @@ const useDeletePainting = () => {
 
     try {
 
-      const response = await fetch(`http://localhost:3000/api/userGallery`, {
+      const response = await fetch(`${process.env.API_URL}/api/userGallery`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: painting.title }),
