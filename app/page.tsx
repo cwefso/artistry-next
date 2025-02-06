@@ -12,8 +12,6 @@ const shuffleArray = (array: Painting[]) => {
 };
 
 export default async function Home() {
-  const apiUrl = `${process.env.API_URL}/api/userGallery`;
-  console.log("API Request URL:", apiUrl);
   const url =
     "https://corsproxy.io/?url=http://www.wikiart.org/en/App/Painting/MostViewedPaintings";
 

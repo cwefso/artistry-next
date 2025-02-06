@@ -46,9 +46,14 @@ export default function GalleryLayout({ paintings }: GalleryLayoutProps) {
 
   useEffect(() => {
     const loadPaintings = async () => {
-      const validatedPaintings = await validatePaintings(paintings);
-      setValidPaintings(validatedPaintings);
-      setLoading(false); // Set loading to false once the images are validated
+      try {
+        const validatedPaintings = await validatePaintings(paintings);
+        setValidPaintings(validatedPaintings);
+      } catch (error) {
+        console.error("Error validating paintings:", error);
+      } finally {
+        setLoading(false); // Set loading to false once the images are validated
+      }
     };
 
     loadPaintings();
@@ -64,7 +69,11 @@ export default function GalleryLayout({ paintings }: GalleryLayoutProps) {
   }
 
   if (!validPaintings.length) {
-    return <div>No valid paintings found.</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        No valid paintings found.
+      </div>
+    );
   }
 
   return (

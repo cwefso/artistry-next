@@ -1,5 +1,7 @@
 import { useState } from "react";
-import type { ArtistPainting, PaintingInformation } from "../types";
+import { useSession } from "@clerk/nextjs";
+import { createClient } from "@supabase/supabase-js";
+import type { Painting, PaintingInformation } from "../types";
 
 interface SaveStatus {
   isLoading: boolean;
@@ -15,25 +17,65 @@ const INITIAL_SAVE_STATUS: SaveStatus = {
 
 const useSavePainting = () => {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>(INITIAL_SAVE_STATUS);
+  const { session } = useSession();
+
+  // Create a custom Supabase client with Clerk token injection
+  const createClerkSupabaseClient = () => {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_KEY!,
+      {
+        global: {
+          fetch: async (url, options = {}) => {
+            const clerkToken = await session?.getToken({
+              template: "supabase",
+            });
+
+            // Log the token for debugging
+            console.log("Clerk Token:", clerkToken);
+
+            const headers = new Headers(options?.headers);
+            headers.set("Authorization", `Bearer ${clerkToken}`);
+
+            return fetch(url, {
+              ...options,
+              headers,
+            });
+          },
+        },
+      }
+    );
+  };
 
   const savePainting = async (
-    painting: PaintingInformation | ArtistPainting,
+    painting: PaintingInformation | Painting,
     onSaveSuccess?: () => void,
     onSaveError?: (error: string) => void
   ) => {
     setSaveStatus({ ...INITIAL_SAVE_STATUS, isLoading: true });
 
     try {
-      const response = await fetch(`${process.env.API_URL}/api/userGallery`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ metadataValue: painting }),
-      });
+      // Create an authenticated Supabase client
+      const client = createClerkSupabaseClient();
 
-      const data = await response.json();
+      // Insert the painting into the "paintings" table
+      const { data, error } = await client.from("paintings").insert([
+        {
+          content_id: painting.contentId,
+          title: painting.title,
+          image_url: painting.image,
+          artist_name: painting.artistName,
+          artist_content_id: painting.artistContentId,
+          completion_year: painting.completitionYear,
+          year_as_string: painting.yearAsString,
+          height: painting.height,
+          width: painting.width,
+          user_id: session?.user.id, // Associate the painting with the current user
+        },
+      ]);
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to save painting");
+      if (error) {
+        throw new Error(error.message || "Failed to save painting");
       }
 
       setSaveStatus({ isLoading: false, error: null, success: true });
