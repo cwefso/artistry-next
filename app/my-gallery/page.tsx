@@ -3,6 +3,19 @@ import { createClient } from "@supabase/supabase-js";
 import { Painting } from "../types";
 import GalleryLayout from "../components/Gallery/GalleryLayout";
 
+type PaintingRow = {
+  content_id: string;
+  title: string;
+  image_url: string;
+  artist_name: string;
+  artist_content_id: string;
+  completion_year: number;
+  year_as_string: string;
+  height: number;
+  width: number;
+  user_id: string; // Assuming this exists in your table
+};
+
 export default async function MyGallery() {
   const { sessionId, userId } = await auth();
 
@@ -11,40 +24,60 @@ export default async function MyGallery() {
   }
 
   try {
+    // Fetch the Clerk token for Supabase authentication
     const client = await clerkClient();
     const { jwt: clerkToken } = (await client.sessions.getToken(
       sessionId,
       "supabase"
     )) as { jwt: string };
 
-    console.log("Clerk Token:", clerkToken);
-    console.log("Session ID:", sessionId);
-    console.log("User ID from Clerk:", userId);
-
     if (!clerkToken) {
       throw new Error("Failed to retrieve authentication token.");
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!;
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: `Bearer ${clerkToken}` } },
-    });
+    console.log("Clerk Token:", clerkToken);
+    console.log("Session ID:", sessionId);
+    console.log("User ID from Clerk:", userId);
 
+    // Create a custom Supabase client with Clerk token injection
+    const createClerkSupabaseClient = () => {
+      return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_KEY!,
+        {
+          global: {
+            fetch: async (url, options = {}) => {
+              const headers = new Headers(options?.headers);
+              headers.set("Authorization", `Bearer ${clerkToken}`);
+
+              return fetch(url, {
+                ...options,
+                headers,
+              });
+            },
+          },
+        }
+      );
+    };
+
+    // Initialize Supabase client
+    const supabase = createClerkSupabaseClient();
+
+    // Fetch paintings for the current user
     const { data: paintings, error } = await supabase
       .from("paintings")
       .select("*")
-      .eq("user_id", userId);
+      .eq("user_id", userId.toString());
 
     if (error) {
-      console.log(error);
+      console.error("Supabase error:", error);
       return <div>Error loading gallery.</div>;
     }
 
-    console.log("paintings", paintings);
+    console.log("Paintings:", paintings);
 
     const gallery: Painting[] =
-      paintings?.map((row) => ({
+      paintings?.map((row: PaintingRow) => ({
         contentId: row.content_id,
         title: row.title,
         image: row.image_url,
@@ -58,7 +91,7 @@ export default async function MyGallery() {
 
     return <GalleryLayout paintings={gallery} />;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching paintings:", error);
     return <div>Error loading gallery.</div>;
   }
 }
