@@ -5,6 +5,7 @@ import { Painting } from "../../types";
 import useSavePainting from "../../hooks/useSavePainting"; // Import the hook
 import useDeletePainting from "../../hooks/useDeletePainting"; // Import the delete hook
 import { useEffect, useState } from "react";
+import { SignedIn } from "@clerk/nextjs";
 
 interface PaintingCardProps {
   painting: Painting;
@@ -80,84 +81,86 @@ export function PaintingCard({
       className="block relative group" // Added group for hover effects
     >
       {/* Save/Delete button */}
-      <button
-        onClick={isMyGalleryRoute ? handleDelete : handleSave} // Use delete handler on /my-gallery, save handler otherwise
-        className={`absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors z-10 opacity-0 group-hover:opacity-100 ${
-          isPaintingSaved && !isMyGalleryRoute
-            ? "cursor-not-allowed"
-            : "cursor-pointer"
-        }`} // Disable pointer events if saved (except on /my-gallery)
-        aria-label={
-          isMyGalleryRoute
-            ? "Delete painting"
-            : isPaintingSaved
-            ? "Painting already saved"
-            : "Save painting"
-        }
-        disabled={
-          isMyGalleryRoute
-            ? deleteStatus.isLoading
-            : saveStatus.isLoading || isPaintingSaved
-        } // Disable button while saving/deleting or if already saved
-      >
-        {isMyGalleryRoute ? (
-          // Delete icon (x)
-          <svg
-            className="w-4 h-4 text-red-500" // Red color for delete icon
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        ) : saveStatus.isLoading ? (
-          // Loading spinner
-          <svg
-            className="w-4 h-4 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
+      <SignedIn>
+        <button
+          onClick={isMyGalleryRoute ? handleDelete : handleSave} // Use delete handler on /my-gallery, save handler otherwise
+          className={`absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors z-10 opacity-0 group-hover:opacity-100 ${
+            isPaintingSaved && !isMyGalleryRoute
+              ? "cursor-not-allowed"
+              : "cursor-pointer"
+          }`} // Disable pointer events if saved (except on /my-gallery)
+          aria-label={
+            isMyGalleryRoute
+              ? "Delete painting"
+              : isPaintingSaved
+              ? "Painting already saved"
+              : "Save painting"
+          }
+          disabled={
+            isMyGalleryRoute
+              ? deleteStatus.isLoading
+              : saveStatus.isLoading || isPaintingSaved
+          } // Disable button while saving/deleting or if already saved
+        >
+          {isMyGalleryRoute ? (
+            // Delete icon (x)
+            <svg
+              className="w-4 h-4 text-red-500" // Red color for delete icon
+              fill="none"
               stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-        ) : (
-          // Checkmark icon
-          <svg
-            className={`w-4 h-4 ${
-              isPaintingSaved ? "text-green-500" : "text-current"
-            }`} // Green checkmark if saved
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-        )}
-      </button>
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : saveStatus.isLoading ? (
+            // Loading spinner
+            <svg
+              className="w-4 h-4 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          ) : (
+            // Checkmark icon
+            <svg
+              className={`w-4 h-4 ${
+                isPaintingSaved ? "text-green-500" : "text-current"
+              }`} // Green checkmark if saved
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          )}
+        </button>
+      </SignedIn>
 
       {/* Painting content */}
       <div className="flex flex-col items-center justify-center p-4 border rounded-md shadow-md my-6 break-inside-avoid">
