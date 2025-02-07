@@ -20,7 +20,7 @@ export const SearchBar = () => {
 
   return (
     <form onSubmit={handleSearchSubmit} className="flex-1 max-w-lg mx-4">
-      <div className="flex gap-2">
+      <div className="flex flex-col md:flex-row gap-2">
         <input
           type="text"
           placeholder="Search for a painting..."
