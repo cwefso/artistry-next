@@ -70,6 +70,7 @@ export default async function MyGallery() {
       return <div>Error loading gallery.</div>;
     }
 
+    // Map the fetched rows to the Painting type
     const gallery: Painting[] =
       paintings?.map((row: PaintingRow) => ({
         contentId: row.content_id,

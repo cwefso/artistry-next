@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation"; // Import useRouter
+import { usePathname, useRouter } from "next/navigation"; // Import usePathname from next/navigation
 import { Painting } from "../../types";
 import useSavePainting from "../../hooks/useSavePainting"; // Import the hook
 import useDeletePainting from "../../hooks/useDeletePainting"; // Import the delete hook
@@ -17,7 +17,7 @@ export function PaintingCard({
   sanitizeTitle,
   isSaved,
 }: PaintingCardProps) {
-  const pathname = usePathname(); // Get the current route
+  const pathname = usePathname(); // Get the current route path
   const router = useRouter();
   const isMyGalleryRoute = pathname === "/my-gallery"; // Check if we're on the /my-gallery route
 
