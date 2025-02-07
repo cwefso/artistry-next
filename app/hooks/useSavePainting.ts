@@ -31,9 +31,6 @@ const useSavePainting = () => {
               template: "supabase",
             });
 
-            // Log the token for debugging
-            console.log("Clerk Token:", clerkToken);
-
             const headers = new Headers(options?.headers);
             headers.set("Authorization", `Bearer ${clerkToken}`);
 
@@ -59,7 +56,7 @@ const useSavePainting = () => {
       const client = createClerkSupabaseClient();
 
       // Insert the painting into the "paintings" table
-      const { data, error } = await client.from("paintings").insert([
+      const { error } = await client.from("paintings").insert([
         {
           content_id: painting.contentId,
           title: painting.title,

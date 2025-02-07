@@ -35,10 +35,6 @@ export default async function MyGallery() {
       throw new Error("Failed to retrieve authentication token.");
     }
 
-    console.log("Clerk Token:", clerkToken);
-    console.log("Session ID:", sessionId);
-    console.log("User ID from Clerk:", userId);
-
     // Create a custom Supabase client with Clerk token injection
     const createClerkSupabaseClient = () => {
       return createClient(
@@ -73,8 +69,6 @@ export default async function MyGallery() {
       console.error("Supabase error:", error);
       return <div>Error loading gallery.</div>;
     }
-
-    console.log("Paintings:", paintings);
 
     const gallery: Painting[] =
       paintings?.map((row: PaintingRow) => ({

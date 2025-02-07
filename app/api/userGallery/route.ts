@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
-import { supabase, getAuthenticatedClient } from "../../lib/supabaseClient";
-import { Painting } from "@/app/types";
+import { getAuthenticatedClient } from "../../lib/supabaseClient";
 
 export async function GET() {
   const user = await currentUser();
@@ -51,14 +50,14 @@ export async function POST(request: Request) {
     const authenticatedSupabase = await getAuthenticatedClient(user.id);
 
     // Check if the user exists in the database, or create them
-    const { data: dbUser, error: userError } = await authenticatedSupabase
+    const { data: dbUser } = await authenticatedSupabase
       .from("users")
       .select("*")
       .eq("clerk_id", user.id)
       .single();
 
     if (!dbUser) {
-      const { data: newUser, error: newUserError } = await authenticatedSupabase
+      const { error: newUserError } = await authenticatedSupabase
         .from("users")
         .insert([{ clerk_id: user.id }])
         .select()
@@ -70,12 +69,11 @@ export async function POST(request: Request) {
     }
 
     // Check for duplicate paintings
-    const { data: duplicate, error: duplicateError } =
-      await authenticatedSupabase
-        .from("paintings")
-        .select("*")
-        .eq("title", metadataValue.title)
-        .eq("user_id", user.id);
+    const { data: duplicate } = await authenticatedSupabase
+      .from("paintings")
+      .select("*")
+      .eq("title", metadataValue.title)
+      .eq("user_id", user.id);
 
     if (duplicate && duplicate.length > 0) {
       return NextResponse.json(
@@ -85,7 +83,7 @@ export async function POST(request: Request) {
     }
 
     // Add the painting to the database
-    const { data: painting, error: paintingError } = await authenticatedSupabase
+    const { error: paintingError } = await authenticatedSupabase
       .from("paintings")
       .insert([
         {
@@ -138,7 +136,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const { data, error: deleteError } = await authenticatedSupabase
+    const { error: deleteError } = await authenticatedSupabase
       .from("paintings")
       .delete()
       .eq("title", title)

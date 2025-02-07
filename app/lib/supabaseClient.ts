@@ -16,7 +16,6 @@ export const getAuthenticatedClient = async (userId: string) => {
 
     // Log the raw response for debugging
     const rawResponse = await response.text();
-    console.log("Raw Response:", rawResponse);
 
     // Check if the response is OK (status code 200-299)
     if (!response.ok) {
