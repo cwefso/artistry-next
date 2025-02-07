@@ -1,5 +1,7 @@
 import { useState } from "react";
-import type { ArtistPainting, PaintingInformation } from "../types";
+import { useSession } from "@clerk/nextjs";
+import { createClient } from "@supabase/supabase-js";
+import type { Painting, PaintingInformation } from "../types";
 
 interface DeleteStatus {
   isLoading: boolean;
@@ -17,26 +19,53 @@ const useDeletePainting = () => {
   const [deleteStatus, setDeleteStatus] = useState<DeleteStatus>(
     INITIAL_DELETE_STATUS
   );
+  const { session } = useSession();
+
+  // Create a custom Supabase client with Clerk token injection
+  const createClerkSupabaseClient = () => {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_KEY!,
+      {
+        global: {
+          fetch: async (url, options = {}) => {
+            const clerkToken = await session?.getToken({
+              template: "supabase",
+            });
+
+            const headers = new Headers(options?.headers);
+            headers.set("Authorization", `Bearer ${clerkToken}`);
+
+            return fetch(url, {
+              ...options,
+              headers,
+            });
+          },
+        },
+      }
+    );
+  };
 
   const deletePainting = async (
-    painting: PaintingInformation | ArtistPainting,
+    painting: PaintingInformation | Painting,
     onDeleteSuccess?: () => void,
     onDeleteError?: (error: string) => void
   ) => {
     setDeleteStatus({ ...INITIAL_DELETE_STATUS, isLoading: true });
 
     try {
+      // Create an authenticated Supabase client
+      const client = createClerkSupabaseClient();
 
-      const response = await fetch(`${process.env.API_URL}/api/userGallery`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: painting.title }),
-      });
+      // Delete the painting from the "paintings" table
+      const { error } = await client
+        .from("paintings")
+        .delete()
+        .eq("content_id", painting.contentId)
+        .eq("user_id", session?.user.id);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to delete painting");
+      if (error) {
+        throw new Error(error.message || "Failed to delete painting");
       }
 
       setDeleteStatus({ isLoading: false, error: null, success: true });
