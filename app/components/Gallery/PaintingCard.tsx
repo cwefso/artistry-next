@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Painting } from "../../types";
 import useSavePainting from "../../hooks/useSavePainting";
 import useDeletePainting from "../../hooks/useDeletePainting";
