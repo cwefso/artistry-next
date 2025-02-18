@@ -26,8 +26,12 @@ const DeletePaintingButton = ({
 }: DeletePaintingProps) => {
   const { deleteStatus, deletePainting } = useDeletePainting();
 
-  const handleDelete = () =>
-    deletePainting(painting, onDeleteSuccess, onDeleteError);
+  const handleDelete = () => {
+    deletePainting(painting, {
+      onSuccess: onDeleteSuccess,
+      onError: (error) => onDeleteError?.(error.message),
+    });
+  };
 
   return (
     <div className={`inline-flex flex-col items-center ${className}`}>

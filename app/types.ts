@@ -67,3 +67,7 @@ export interface ArtistInfo {
   activeYearsEnd?: number;
   totalPaintings: number;
 }
+
+export interface ApiError extends Error {
+  status?: number;
+}

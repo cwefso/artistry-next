@@ -1,0 +1,48 @@
+
+-app
+    -api
+        -userGallery
+            -route.ts
+    -artist
+        -[name]
+            -page.tsx
+    -components
+        -Gallery
+            -GalleryLayout.tsx
+            -MyGalleryContainer.tsx
+            -PaintingCard.tsx
+        -Header
+            -Header.tsx
+            -Search.tsx
+        -Painting
+            -DeletePaintingButton.tsx
+            -SavePaintingButton.tsx
+            -PaintingDetails.tsx
+        LoadingSpinner.tsx    
+    -hooks
+        -useDeletePainting.ts
+        -useGetPaintings.ts
+        -useSavePainting.ts
+        -useSearch.ts
+    -lib
+        -queries.ts
+        -supabaseClient.ts
+    -my-gallery
+        -page.tsx
+    -painting
+        -[title]
+            -page.tsx
+    -random
+        -page.tsx
+    -results
+        -page.tsx
+    layout.tsx
+    manifest.json
+    page.tsx
+    providers.tsx
+    randomTerms.js
+    types.ts
+-cypress
+-node_modules
+-public
+

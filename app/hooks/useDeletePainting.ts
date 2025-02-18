@@ -1,88 +1,78 @@
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@clerk/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import type { Painting, PaintingInformation } from "../types";
 
-interface DeleteStatus {
-  isLoading: boolean;
-  error: string | null;
-  success: boolean;
-}
-
-const INITIAL_DELETE_STATUS: DeleteStatus = {
-  isLoading: false,
-  error: null,
-  success: false,
-};
-
 const useDeletePainting = () => {
-  const [deleteStatus, setDeleteStatus] = useState<DeleteStatus>(
-    INITIAL_DELETE_STATUS
-  );
   const { session } = useSession();
+  const queryClient = useQueryClient();
 
-  // Create a custom Supabase client with Clerk token injection
-  const createClerkSupabaseClient = () => {
+  const createClerkSupabaseClient = async () => {
+    const clerkToken = await session?.getToken({ template: "supabase" });
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_KEY!,
       {
         global: {
-          fetch: async (url, options = {}) => {
-            const clerkToken = await session?.getToken({
-              template: "supabase",
-            });
-
-            const headers = new Headers(options?.headers);
-            headers.set("Authorization", `Bearer ${clerkToken}`);
-
-            return fetch(url, {
-              ...options,
-              headers,
-            });
+          headers: {
+            Authorization: `Bearer ${clerkToken}`,
           },
         },
       }
     );
   };
 
-  const deletePainting = async (
-    painting: PaintingInformation | Painting,
-    onDeleteSuccess?: () => void,
-    onDeleteError?: (error: string) => void
-  ) => {
-    setDeleteStatus({ ...INITIAL_DELETE_STATUS, isLoading: true });
+  const deleteMutation = useMutation({
+    mutationFn: async (painting: PaintingInformation | Painting) => {
+      const client = await createClerkSupabaseClient();
 
-    try {
-      // Create an authenticated Supabase client
-      const client = createClerkSupabaseClient();
-
-      // Delete the painting from the "paintings" table
       const { error } = await client
         .from("paintings")
         .delete()
         .eq("content_id", painting.contentId)
         .eq("user_id", session?.user.id);
 
-      if (error) {
-        throw new Error(error.message || "Failed to delete painting");
-      }
+      if (error) throw new Error(error.message || "Failed to delete painting");
+      return painting.contentId;
+    },
+    onMutate: async (deletedPainting) => {
+      // Cancel current queries for the paintings list
+      await queryClient.cancelQueries({ queryKey: ["userGallery"] });
 
-      setDeleteStatus({ isLoading: false, error: null, success: true });
-      onDeleteSuccess?.();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
-      setDeleteStatus({
-        isLoading: false,
-        error: errorMessage,
-        success: false,
-      });
-      onDeleteError?.(errorMessage);
-    }
+      // Optimistically update the UI
+      const previousPaintings = queryClient.getQueryData<Painting[]>([
+        "userGallery",
+      ]);
+
+      queryClient.setQueryData<Painting[]>(
+        ["userGallery"],
+        (old) =>
+          old?.filter((p) => p.contentId !== deletedPainting.contentId) || []
+      );
+
+      return { previousPaintings };
+    },
+    onError: (error, _, context) => {
+      // Rollback optimistic update
+      queryClient.setQueryData(["userGallery"], context?.previousPaintings);
+      throw error; // Let error boundaries handle this
+    },
+    onSettled: () => {
+      // Invalidate queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ["userGallery"] });
+      queryClient.invalidateQueries({ queryKey: ["paintings"] });
+    },
+  });
+
+  return {
+    deleteStatus: {
+      isLoading: deleteMutation.isPending,
+      error: deleteMutation.error?.message || null,
+      success: deleteMutation.isSuccess,
+    },
+    deletePainting: deleteMutation.mutate,
+    reset: deleteMutation.reset,
   };
-
-  return { deleteStatus, deletePainting };
 };
 
 export default useDeletePainting;

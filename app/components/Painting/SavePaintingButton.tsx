@@ -26,7 +26,12 @@ const SavePaintingButton = ({
 }: SavePaintingProps) => {
   const { saveStatus, savePainting } = useSavePainting();
 
-  const handleSave = () => savePainting(painting, onSaveSuccess, onSaveError);
+  const handleSave = () => {
+    savePainting(painting, {
+      onSuccess: onSaveSuccess,
+      onError: (error) => onSaveError?.(error.message),
+    });
+  };
 
   return (
     <div className={`inline-flex flex-col items-center ${className}`}>

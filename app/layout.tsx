@@ -1,4 +1,4 @@
-import { ClerkProvider } from "@clerk/nextjs";
+import { Providers } from "./providers";
 import "./globals.css";
 import Header from "./components/Header/Header";
 import Head from "next/head";
@@ -9,16 +9,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <Head>
-          <link rel="manifest" href="/manifest.json" />
-        </Head>
-        <body>
+    <html lang="en">
+      <Head>
+        <link rel="manifest" href="/manifest.json" />
+      </Head>
+      <body>
+        <Providers>
           <Header />
           <section className="m-4 ">{children}</section>
-        </body>
-      </html>
-    </ClerkProvider>
+        </Providers>
+      </body>
+    </html>
   );
 }
