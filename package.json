@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docker:build": "docker build -t painting-gallery .",
+    "docker:run": "docker run -p 3000:3000 painting-gallery",
+    "docker:compose": "docker-compose up"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.9.6",
