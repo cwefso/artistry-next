@@ -1,4 +1,5 @@
 export interface Painting {
+  isOptimistic?: boolean;
   contentId?: string;
   title?: string;
   image?: string;

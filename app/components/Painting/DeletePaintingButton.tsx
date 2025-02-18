@@ -1,10 +1,10 @@
 "use client";
-import type { ArtistPainting, PaintingInformation } from "../../types";
+import type { Painting, PaintingInformation } from "../../types";
 import useDeletePainting from "../../hooks/useDeletePainting";
 import LoadingSpinner from "../LoadingSpinner";
 
 interface DeletePaintingProps {
-  painting: PaintingInformation | ArtistPainting;
+  painting: PaintingInformation | Painting;
   onDeleteSuccess?: () => void;
   onDeleteError?: (error: string) => void;
   className?: string;
@@ -25,7 +25,7 @@ const DeletePaintingButton = ({
   variant = "primary",
 }: DeletePaintingProps) => {
   const { deleteStatus, deletePainting } = useDeletePainting();
-
+  console.log("painting,", painting);
   const handleDelete = () => {
     deletePainting(painting, {
       onSuccess: onDeleteSuccess,

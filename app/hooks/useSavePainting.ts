@@ -8,7 +8,15 @@ const useSavePainting = () => {
   const queryClient = useQueryClient();
 
   const createClerkSupabaseClient = async () => {
-    const clerkToken = await session?.getToken({ template: "supabase" });
+    if (!session) {
+      throw new Error("Session not available");
+    }
+
+    const clerkToken = await session.getToken({ template: "supabase" });
+    if (!clerkToken) {
+      throw new Error("Failed to get authentication token");
+    }
+
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_KEY!,
@@ -24,57 +32,83 @@ const useSavePainting = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (painting: PaintingInformation | Painting) => {
+      // Validate painting object
+      if (!painting || !painting.contentId) {
+        throw new Error("Invalid painting data: contentId is missing");
+      }
+
       const client = await createClerkSupabaseClient();
 
-      const { data, error } = await client.from("paintings").insert([
-        {
-          content_id: painting.contentId,
-          title: painting.title,
-          image_url: painting.image,
-          artist_name: painting.artistName,
-          artist_content_id: painting.artistContentId,
-          completion_year: painting.completitionYear,
-          year_as_string: painting.yearAsString,
-          height: painting.height,
-          width: painting.width,
-          user_id: session?.user.id,
-        },
-      ]);
+      const { data, error } = await client
+        .from("paintings")
+        .insert([
+          {
+            content_id: painting.contentId,
+            title: painting.title,
+            image_url: painting.image,
+            artist_name: painting.artistName,
+            artist_content_id: painting.artistContentId,
+            completion_year: painting.completitionYear,
+            year_as_string: painting.yearAsString,
+            height: painting.height,
+            width: painting.width,
+            user_id: session?.user.id,
+          },
+        ])
+        .select() // Add this to return the inserted row
+        .single(); // Ensure a single row is returned
 
-      if (error) throw new Error(error.message || "Failed to save painting");
-      return data?.[0] as unknown as Painting;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw new Error(error.message || "Failed to save painting");
+      }
+
+      if (!data) {
+        throw new Error("No data returned from Supabase");
+      }
+
+      return data[0] as Painting;
     },
     onMutate: async (newPainting) => {
+      // Validate newPainting before proceeding
+      if (!newPainting || !newPainting.contentId) {
+        throw new Error("Invalid painting data for optimistic update");
+      }
+
       await queryClient.cancelQueries({ queryKey: ["userGallery"] });
 
       const previousPaintings = queryClient.getQueryData<Painting[]>([
         "userGallery",
       ]);
-      const optimisticPainting = {
-        ...newPainting,
-        // Add temporary ID if needed
-        contentId: `temp-${Date.now()}`,
-      };
 
-      queryClient.setQueryData<Painting[]>(["userGallery"], (old) =>
-        old ? [...old, optimisticPainting] : [optimisticPainting]
-      );
+      queryClient.setQueryData<Painting[]>(["userGallery"], (old = []) => {
+        const optimisticPainting: Painting = {
+          ...newPainting,
+          contentId: `${newPainting.contentId}-temp`, // Use temp ID
+          isOptimistic: true,
+        };
+
+        return [...old, optimisticPainting];
+      });
 
       return { previousPaintings };
     },
     onSuccess: (savedPainting) => {
       // Replace optimistic painting with real data
       queryClient.setQueryData<Painting[]>(["userGallery"], (old) =>
-        old?.map((p) => (p.contentId?.startsWith("temp-") ? savedPainting : p))
+        old?.map((p) =>
+          p.contentId === `${savedPainting?.contentId}-temp` ? savedPainting : p
+        )
       );
     },
-    onError: (error, _, context) => {
-      queryClient.setQueryData(["userGallery"], context?.previousPaintings);
-      throw error;
+    onError: (error, painting, context) => {
+      console.error("Save painting error:", error);
+      if (context?.previousPaintings) {
+        queryClient.setQueryData(["userGallery"], context.previousPaintings);
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["userGallery"] });
-      queryClient.invalidateQueries({ queryKey: ["paintings"] });
     },
   });
 

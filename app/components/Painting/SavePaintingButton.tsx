@@ -1,10 +1,10 @@
 "use client";
-import type { ArtistPainting, PaintingInformation } from "../../types";
+import type { Painting, PaintingInformation } from "../../types";
 import useSavePainting from "../../hooks/useSavePainting";
 import LoadingSpinner from "../LoadingSpinner";
 
 interface SavePaintingProps {
-  painting: PaintingInformation | ArtistPainting;
+  painting: PaintingInformation | Painting;
   onSaveSuccess?: () => void;
   onSaveError?: (error: string) => void;
   className?: string;
@@ -27,6 +27,7 @@ const SavePaintingButton = ({
   const { saveStatus, savePainting } = useSavePainting();
 
   const handleSave = () => {
+    console.log("Saving painting:", painting);
     savePainting(painting, {
       onSuccess: onSaveSuccess,
       onError: (error) => onSaveError?.(error.message),

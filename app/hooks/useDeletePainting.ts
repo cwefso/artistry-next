@@ -29,7 +29,7 @@ const useDeletePainting = () => {
       const { error } = await client
         .from("paintings")
         .delete()
-        .eq("content_id", painting.contentId)
+        .eq("content_id", painting?.contentId)
         .eq("user_id", session?.user.id);
 
       if (error) throw new Error(error.message || "Failed to delete painting");
