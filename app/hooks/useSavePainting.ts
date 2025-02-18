@@ -1,62 +1,32 @@
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@clerk/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import type { Painting, PaintingInformation } from "../types";
 
-interface SaveStatus {
-  isLoading: boolean;
-  error: string | null;
-  success: boolean;
-}
-
-const INITIAL_SAVE_STATUS: SaveStatus = {
-  isLoading: false,
-  error: null,
-  success: false,
-};
-
 const useSavePainting = () => {
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>(INITIAL_SAVE_STATUS);
   const { session } = useSession();
+  const queryClient = useQueryClient();
 
-  // Create a custom Supabase client with Clerk token injection
-  const createClerkSupabaseClient = () => {
+  const createClerkSupabaseClient = async () => {
+    const clerkToken = await session?.getToken({ template: "supabase" });
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_KEY!,
       {
         global: {
-          fetch: async (url, options = {}) => {
-            const clerkToken = await session?.getToken({
-              template: "supabase",
-            });
-
-            const headers = new Headers(options?.headers);
-            headers.set("Authorization", `Bearer ${clerkToken}`);
-
-            return fetch(url, {
-              ...options,
-              headers,
-            });
+          headers: {
+            Authorization: `Bearer ${clerkToken}`,
           },
         },
       }
     );
   };
 
-  const savePainting = async (
-    painting: PaintingInformation | Painting,
-    onSaveSuccess?: () => void,
-    onSaveError?: (error: string) => void
-  ) => {
-    setSaveStatus({ ...INITIAL_SAVE_STATUS, isLoading: true });
+  const saveMutation = useMutation({
+    mutationFn: async (painting: PaintingInformation | Painting) => {
+      const client = await createClerkSupabaseClient();
 
-    try {
-      // Create an authenticated Supabase client
-      const client = createClerkSupabaseClient();
-
-      // Insert the painting into the "paintings" table
-      const { error } = await client.from("paintings").insert([
+      const { data, error } = await client.from("paintings").insert([
         {
           content_id: painting.contentId,
           title: painting.title,
@@ -67,29 +37,56 @@ const useSavePainting = () => {
           year_as_string: painting.yearAsString,
           height: painting.height,
           width: painting.width,
-          user_id: session?.user.id, // Associate the painting with the current user
+          user_id: session?.user.id,
         },
       ]);
 
-      if (error) {
-        throw new Error(error.message || "Failed to save painting");
-      }
+      if (error) throw new Error(error.message || "Failed to save painting");
+      return data?.[0] as unknown as Painting;
+    },
+    onMutate: async (newPainting) => {
+      await queryClient.cancelQueries({ queryKey: ["userGallery"] });
 
-      setSaveStatus({ isLoading: false, error: null, success: true });
-      onSaveSuccess?.();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
-      setSaveStatus({
-        isLoading: false,
-        error: errorMessage,
-        success: false,
-      });
-      onSaveError?.(errorMessage);
-    }
+      const previousPaintings = queryClient.getQueryData<Painting[]>([
+        "userGallery",
+      ]);
+      const optimisticPainting = {
+        ...newPainting,
+        // Add temporary ID if needed
+        contentId: `temp-${Date.now()}`,
+      };
+
+      queryClient.setQueryData<Painting[]>(["userGallery"], (old) =>
+        old ? [...old, optimisticPainting] : [optimisticPainting]
+      );
+
+      return { previousPaintings };
+    },
+    onSuccess: (savedPainting) => {
+      // Replace optimistic painting with real data
+      queryClient.setQueryData<Painting[]>(["userGallery"], (old) =>
+        old?.map((p) => (p.contentId?.startsWith("temp-") ? savedPainting : p))
+      );
+    },
+    onError: (error, _, context) => {
+      queryClient.setQueryData(["userGallery"], context?.previousPaintings);
+      throw error;
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["userGallery"] });
+      queryClient.invalidateQueries({ queryKey: ["paintings"] });
+    },
+  });
+
+  return {
+    saveStatus: {
+      isLoading: saveMutation.isPending,
+      error: saveMutation.error?.message || null,
+      success: saveMutation.isSuccess,
+    },
+    savePainting: saveMutation.mutate,
+    reset: saveMutation.reset,
   };
-
-  return { saveStatus, savePainting };
 };
 
 export default useSavePainting;

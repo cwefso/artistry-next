@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+// app/hooks/useGetPaintings.ts
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
 import { useUser, useSession } from "@clerk/nextjs";
+import { createClient } from "@supabase/supabase-js";
 import type { Painting } from "../types";
 
 interface PaintingRow {
@@ -16,25 +19,11 @@ interface PaintingRow {
   user_id: string;
 }
 
-interface FetchStatus {
-  isLoading: boolean;
-  error: string | null;
-  paintings: Painting[];
-}
-
-const INITIAL_FETCH_STATUS: FetchStatus = {
-  isLoading: false,
-  error: null,
-  paintings: [],
-};
-
 const useGetPaintings = () => {
   const { user } = useUser();
   const { session } = useSession();
-  const [fetchStatus, setFetchStatus] =
-    useState<FetchStatus>(INITIAL_FETCH_STATUS);
 
-  const mapPaintingRow = (row: PaintingRow): Painting => ({
+  const mapPainting = (row: PaintingRow): Painting => ({
     contentId: row.content_id,
     title: row.title,
     image: row.image_url,
@@ -46,75 +35,38 @@ const useGetPaintings = () => {
     width: row.width,
   });
 
-  const fetchPaintings = useCallback(async () => {
-    if (!session || !user) {
-      setFetchStatus((prev) => ({
-        ...prev,
-        error: "No authenticated user",
-        isLoading: false,
-      }));
-      return;
-    }
+  return useQuery({
+    queryKey: ["paintings", user?.id],
+    queryFn: async () => {
+      if (!session || !user) {
+        throw new Error("No authenticated user");
+      }
 
-    setFetchStatus((prev) => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      // Get Supabase token from Clerk
       const token = await session.getToken({ template: "supabase" });
-
       if (!token) {
         throw new Error("Failed to get authentication token");
       }
 
-      // Create Supabase client with Clerk token
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_KEY!,
         {
-          global: {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+          global: { headers: { Authorization: `Bearer ${token}` } },
         }
       );
 
-      // Fetch paintings for the current user
-      const { data: paintings, error: supabaseError } = await supabase
+      const { data, error } = await supabase
         .from("paintings")
         .select("*")
         .eq("user_id", user.id);
 
-      if (supabaseError) {
-        throw supabaseError;
-      }
-
-      const mappedPaintings = (paintings || []).map(mapPaintingRow);
-
-      setFetchStatus({
-        isLoading: false,
-        error: null,
-        paintings: mappedPaintings,
-      });
-    } catch (error) {
-      console.error("Error fetching paintings:", error);
-      setFetchStatus((prev) => ({
-        ...prev,
-        isLoading: false,
-        error:
-          error instanceof Error ? error.message : "Failed to fetch paintings",
-      }));
-    }
-  }, [session, user]);
-
-  useEffect(() => {
-    fetchPaintings();
-  }, [fetchPaintings]);
-
-  return {
-    ...fetchStatus,
-    refetch: fetchPaintings,
-  };
+      if (error) throw error;
+      return data;
+    },
+    select: (data) => (data || []).map(mapPainting),
+    enabled: !!session && !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
 };
 
 export default useGetPaintings;
