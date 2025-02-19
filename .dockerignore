@@ -1,8 +1,5 @@
 node_modules
 .next
 .git
-.env.local
-.env.development
-.env.test
 Dockerfile
 docker-compose.yml

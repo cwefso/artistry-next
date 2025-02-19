@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "docker:build": "docker build -t painting-gallery .",
-    "docker:run": "docker run -p 3000:3000 painting-gallery",
+    "docker:build": "docker build -t artistry .",
+    "docker:run": "docker run -p 3000:3000 artistry",
     "docker:compose": "docker-compose up"
   },
   "dependencies": {
